@@ -18,6 +18,8 @@ tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it.
 - Farenin **yanındaki kareye dokunursan** oraya bir adım atar.
 - Ya da sağdaki (dikeyde alttaki) **büyük yön tuşlarına** bas — basılı tutunca
   hızlı gider.
+- Oklar yer kaplıyorsa **🎮 Tuşlar** düğmesiyle kapat: labirent büyür, parmakla
+  oynamaya devam edersin. Tercih hatırlanır.
 - Klavye bağlıysa: yön tuşları / WASD, `H` yardım, `R` baştan, `M` müzik,
   `V` konuşma, `Enter` devam.
 

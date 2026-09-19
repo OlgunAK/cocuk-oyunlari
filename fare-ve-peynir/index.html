@@ -15,6 +15,8 @@
   :root{
     --cell: 46px;
     --pad: clamp(54px, 11vmin, 88px);   /* yon tusu boyu - tablette buyuk olmali */
+    --gap: 3px;                         /* hucreler arasi bosluk */
+    --bpad: 10px;                       /* tahtanin kendi ic bosluk */
     --brown:#5a3921;
     --brown2:#7a4f2e;
     --cream:#fff6e5;
@@ -121,7 +123,7 @@
   #levelName{ color:#7a4a1d; }
 
   /* ---------- konuşma balonu ---------- */
-  #bubble{ min-height:46px; display:flex; justify-content:center; align-items:center; margin:4px 0 8px; padding:0 6px; }
+  #bubble{ height:46px; display:flex; justify-content:center; align-items:center; margin:4px 0 8px; padding:0 6px; }
   .speech{
     display:inline-block; background:#fff; color:var(--brown);
     padding:9px 20px; border-radius:22px; font-weight:800; font-size:clamp(13px,3.6vw,17px);
@@ -139,9 +141,9 @@
   /* ---------- tahta ---------- */
   #boardWrap{ position:relative; touch-action:none; }
   #board{
-    display:grid; gap:3px;
+    display:grid; gap:var(--gap);
     background:linear-gradient(160deg,#6b4423,#4a2f18);
-    padding:10px; border-radius:20px;
+    padding:var(--bpad); border-radius:20px;
     box-shadow:0 10px 0 #3a2413, 0 18px 34px rgba(0,0,0,.3);
     touch-action:none;
   }
@@ -205,7 +207,16 @@
     .stage{ flex-direction:row; gap:18px; }
   }
 
+  /* Yön tuşları + alt düğmeler tek sütun: dikeyde tahtanın altına,
+     yatayda tahtanın yanına geçiyor (yatayda yanda zaten boş yer var,
+     düğmeler alta kurulunca tahtadan bir satır çalıyordu). */
+  .yan{ display:flex; flex-direction:column; align-items:center; gap:10px; max-width:100%; }
+  @media (orientation:landscape) and (min-width:700px){
+    .yan{ max-width:calc(var(--pad) * 3 + 16px); }
+  }
+
   /* ---------- yön tuşları (dokunmatik için büyük) ---------- */
+  .dpad[hidden]{ display:none; }
   .dpad{
     display:grid;
     grid-template-columns:repeat(3, var(--pad));
@@ -224,6 +235,14 @@
   .dpad .mid:active{ transform:none; }
   .dpad .right{ grid-column:3; grid-row:2; }
   .dpad .down { grid-column:2; grid-row:3; }
+
+  /* Dikeyde uc satir cok yer yiyor: ortadaki kahraman gizlenip
+     asagi tusu orta satira aliniyor (klasik 3x2 yon takimi). */
+  @media (orientation:portrait){
+    .dpad{ grid-template-rows:repeat(2, calc(var(--pad) * .8)); }
+    .dpad .mid { display:none; }
+    .dpad .down{ grid-column:2; grid-row:2; }
+  }
 
   /* ---------- seviye seçimi ---------- */
   .levels{ display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:560px; }
@@ -268,19 +287,54 @@
   /* ---------- ayarlar çekmecesi ---------- */
   #extras{ display:flex; flex-direction:column; align-items:center; width:100%; }
   #extras[hidden]{ display:none; }
-  #toolbar{ margin-top:10px; }
   #toolbar button{ font-size:15px; }
   @media (max-width:480px){ #toolbar button{ font-size:13px; padding:9px 10px; } }
 
-  @media (max-width:520px){
+  /* ---------- dar ekran (telefon): cerceve kisilsin, tahta buyusun ---------- */
+  @media (max-width:560px){
+    :root{ --gap:2px; --bpad:6px; }
+    body{
+      padding-left:calc(4px + env(safe-area-inset-left));
+      padding-right:calc(4px + env(safe-area-inset-right));
+    }
+    h1{ font-size:21px; }
+    .subtitle{ display:none; }
+    #bubble{ height:40px; margin:2px 0 5px; }
+    .speech{ padding:7px 15px; }
+    #board{ border-radius:14px; }
     .legend{ font-size:11.5px; }
+  }
+  @media (max-width:430px){
+    /* Bolum adi balonda zaten soyleniyor - HUD tek satira insin */
+    #levelName{ display:none; }
+    .hud{ font-size:12px; gap:4px; }
+    .hud .box{ padding:4px 8px; gap:4px; }
+    .hud.panel{ padding:5px 7px; }
+    /* Alt dugmeler simge olsun: dort satir yerine tek satir */
+    #toolbar button .ad{ display:none; }
+    #toolbar button{ font-size:21px; padding:10px 13px; }
+    #toolbar.panel{ padding:6px 8px; }
   }
 
   /* Alçak ekran (yatay tablet / telefon): başlık yer kaplamasın */
   @media (max-height:600px){
     h1{ font-size:20px; }
     .subtitle{ display:none; }
-    #bubble{ min-height:0; margin:2px 0 4px; }
+    #bubble{ height:34px; margin:2px 0 4px; }
+    .speech{ padding:6px 14px; font-size:13px; }
+  }
+  /* Çok alçak (telefon yatay): tahtaya kalan her pikseli ver */
+  @media (max-height:520px){
+    #head{ display:none; }
+    #bubble{ height:0; margin:0; overflow:visible; }   /* balon tahtanın üstüne taşsın */
+    .speech{ position:relative; z-index:6; }
+    #levelName{ display:none; }
+    .hud{ font-size:12px; gap:4px; }
+    .hud .box{ padding:4px 8px; gap:4px; }
+    .hud.panel{ padding:5px 7px; margin-bottom:5px; }
+    #toolbar button .ad{ display:none; }
+    #toolbar button{ font-size:20px; padding:9px 12px; min-height:42px; }
+    #toolbar.panel{ padding:5px 7px; }
   }
 
   /* Tablette "Hareketi azalt" açıksa animasyonları kıs - kare kaybı olmasın */
@@ -317,21 +371,24 @@
   <div class="stage">
     <div id="boardWrap"><div id="board"></div></div>
 
-    <div class="dpad">
-      <button class="up"    data-dr="-1" data-dc="0"  aria-label="Yukarı">⬆️</button>
-      <button class="left"  data-dr="0"  data-dc="-1" aria-label="Sol">⬅️</button>
-      <button class="mid"   id="padMid" aria-hidden="true" tabindex="-1">🐭</button>
-      <button class="right" data-dr="0"  data-dc="1"  aria-label="Sağ">➡️</button>
-      <button class="down"  data-dr="1"  data-dc="0"  aria-label="Aşağı">⬇️</button>
-    </div>
-  </div>
+    <div class="yan">
+      <div class="dpad">
+        <button class="up"    data-dr="-1" data-dc="0"  aria-label="Yukarı">⬆️</button>
+        <button class="left"  data-dr="0"  data-dc="-1" aria-label="Sol">⬅️</button>
+        <button class="mid"   id="padMid" aria-hidden="true" tabindex="-1">🐭</button>
+        <button class="right" data-dr="0"  data-dc="1"  aria-label="Sağ">➡️</button>
+        <button class="down"  data-dr="1"  data-dc="0"  aria-label="Aşağı">⬇️</button>
+      </div>
 
-  <div class="row panel" id="toolbar">
-    <button class="hint-btn" onclick="showHintFlash()">💡 Yardım</button>
-    <button onclick="restartLevel()">🔄 Baştan</button>
-    <button id="muteBtn" class="sound-btn" onclick="toggleMute()">🔊 Müzik</button>
-    <button id="fsBtn" class="help-btn" onclick="toggleFullscreen()" hidden>⛶ Tam ekran</button>
-    <button id="extrasBtn" onclick="toggleExtras()">⚙️ Ayarlar</button>
+      <div class="row panel" id="toolbar">
+        <button class="hint-btn" onclick="showHintFlash()">💡<span class="ad"> Yardım</span></button>
+        <button onclick="restartLevel()">🔄<span class="ad"> Baştan</span></button>
+        <button id="padBtn" onclick="togglePad()">🎮<span class="ad"> Tuşlar</span></button>
+        <button id="muteBtn" class="sound-btn" onclick="toggleMute()">🔊<span class="ad"> Müzik</span></button>
+        <button id="fsBtn" class="help-btn" onclick="toggleFullscreen()" hidden>⛶<span class="ad"> Tam ekran</span></button>
+        <button id="extrasBtn" onclick="toggleExtras()">⚙️<span class="ad"> Ayarlar</span></button>
+      </div>
+    </div>
   </div>
 
   <div id="extras" hidden>
@@ -578,12 +635,23 @@ function sfxDoor()  { playNote(260, 0.2, 0, 'sawtooth', 0.22); playNote(420, 0.2
 function sfxWin()   { [['C5',0.12],['E5',0.12],['G5',0.12],['C6',0.28]].reduce((t,[n,d])=>{ playNote(N[n], d, t, 'triangle', 0.3); return t+d; }, 0); }
 function sfxLevelUp(){ ['C5','E5','G5','C5','E5','G5','B5','C6'].forEach((n,i)=>playNote(N[n], 0.16, i*0.08, 'triangle', 0.24)); }
 
+/* Arac cubugu dugmelerinde simge ile etiket ayri: dar ekranda etiket
+   gizleniyor, o yuzden yaziyi topluca ezmek yerine boyle yaziyoruz. */
+function btnYaz(btn, simge, ad){
+  if (!btn) return;
+  btn.textContent = simge;
+  const s = document.createElement('span');
+  s.className = 'ad';
+  s.textContent = ' ' + ad;
+  btn.appendChild(s);
+}
+
 function toggleMute(){
   muted = !muted;
   const btn = document.getElementById('muteBtn');
-  if (muted){ btn.textContent = '🔇 Müzik'; btn.classList.add('off'); stopMusic(); }
+  if (muted){ btnYaz(btn, '🔇', 'Müzik'); btn.classList.add('off'); stopMusic(); }
   else{
-    btn.textContent = '🔊 Müzik'; btn.classList.remove('off');
+    btnYaz(btn, '🔊', 'Müzik'); btn.classList.remove('off');
     initAudio();
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     playMusic();
@@ -650,13 +718,35 @@ function toggleFullscreen(){
   }catch(e){}
 }
 
+/* --- Yon tuslarini ac/kapa. Parmakla kaydirarak oynayanlarda tuslar
+       bos yere ekranin ucte birini yiyordu; kapatilinca tahta buyuyor. --- */
+let padVisible = true;
+function applyPad(){
+  const pad = document.querySelector('.dpad');
+  if (pad){ if (padVisible) pad.removeAttribute('hidden'); else pad.setAttribute('hidden',''); }
+  const btn = document.getElementById('padBtn');
+  if (btn){
+    btnYaz(btn, padVisible ? '🎮' : '👆', padVisible ? 'Tuşlar' : 'Kaydır');
+    btn.classList.toggle('off', !padVisible);
+  }
+}
+function togglePad(){
+  padVisible = !padVisible;
+  applyPad();
+  try{ localStorage.setItem('fpo_pad', padVisible ? '1' : '0'); }catch(e){}
+  if (grid.length) render();
+  bubbleText(padVisible
+    ? 'Yön tuşları geri geldi 🎮'
+    : 'Tuşlar kapandı — parmağını labirentin üzerinde kaydır 👆', false);
+}
+
 /* --- Ayarlar cekmecesi: tablette oyun tek ekrana sigsin diye kapali basliyor --- */
 function toggleExtras(){
   const box = document.getElementById('extras');
   const btn = document.getElementById('extrasBtn');
   const acik = box.hasAttribute('hidden');
   if (acik) box.removeAttribute('hidden'); else box.setAttribute('hidden','');
-  btn.textContent = acik ? '✖️ Kapat' : '⚙️ Ayarlar';
+  btnYaz(btn, acik ? '✖️' : '⚙️', acik ? 'Kapat' : 'Ayarlar');
   if (acik) setTimeout(() => box.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
   if (grid.length) render();
 }
@@ -1257,24 +1347,35 @@ function fitBoard(cols, rows){
   const winW = Math.round((vv && vv.width)  || window.innerWidth  || 800);
   const winH = Math.round((vv && vv.height) || window.innerHeight || 600);
 
-  // Yatay tablette yon tuslari tahtanin YANINDA, dikeyde ALTINDA duruyor
+  // Yatay tablette yon tuslari tahtanin YANINDA, dikeyde ALTINDA duruyor.
+  // Tuslar kapaliysa olculeri sifir gelir, tahta o yeri de kullanir.
   const yatay = winW >= 700 && winW > winH;
-  const padEl = document.querySelector('.dpad');
-  const padW  = padEl ? Math.round(padEl.getBoundingClientRect().width)  : 210;
-  const padH  = padEl ? Math.round(padEl.getBoundingClientRect().height) : 210;
+  const yanEl = document.querySelector('.yan');
+  const yanW  = yanEl ? Math.round(yanEl.getBoundingClientRect().width)  : 0;
+  const yanH  = yanEl ? Math.round(yanEl.getBoundingClientRect().height) : 0;
 
   // Bu parcalarin boyu hucre boyutuna bagli DEGIL, o yuzden olcup cikarabiliyoruz
   let sabitH = 0;
-  ['head','hudBar','bubble','toolbar'].forEach(id => {
+  ['head','hudBar','bubble'].forEach(id => {
     const el = document.getElementById(id);
     if (el && el.offsetParent !== null) sabitH += el.getBoundingClientRect().height + 10;
   });
 
-  const availW = Math.min(winW - 22 - (yatay ? padW + 20 : 0), 900);
-  const availH = Math.max(150, winH - 20 - sabitH - (yatay ? 0 : padH + 14));
+  // Kullanilabilir genislik: govdenin ic genisligini OLCUYORUZ (kenar bosluklari
+  // dar ekranda kisiliyor, tahmin etmek 10-15px kaybettiriyordu).
+  const app  = document.querySelector('.app');
+  const appW = app ? app.clientWidth : winW - 20;
 
-  const byW = Math.floor((availW - 26) / cols) - 3;
-  const byH = Math.floor((availH - 26) / rows) - 3;
+  const availW = Math.min(appW - (yatay ? yanW + 20 : 0), 900);
+  const availH = Math.max(150, winH - 20 - sabitH - (yatay ? 0 : yanH + 12));
+
+  // Tahtanin kendi ic boslugu ve hucre araligi CSS'ten okunuyor
+  const cs   = getComputedStyle(document.documentElement);
+  const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 3;
+  const bpad = parseFloat(cs.getPropertyValue('--bpad')) || 10;
+
+  const byW = Math.floor((availW - bpad * 2 - gap * (cols - 1)) / cols);
+  const byH = Math.floor((availH - bpad * 2 - gap * (rows - 1) - 12) / rows);  // 12: alt golge
   const size = Math.max(16, Math.min(86, byW, byH));
   document.documentElement.style.setProperty('--cell', size + 'px');
 }
@@ -1878,6 +1979,8 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', saveProgress);
 
 loadProgress();
+try{ padVisible = localStorage.getItem('fpo_pad') !== '0'; }catch(e){}
+applyPad();
 document.getElementById('levelMax').textContent = levels.length;
 hearts = maxHearts();
 renderStickers();
