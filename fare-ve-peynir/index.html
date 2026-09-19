@@ -297,7 +297,15 @@
     padding:calc(12px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom));
   }
   #extras.show{ display:flex; animation:popIn .22s ease; }
-  #extras .kutu{
+  #kurulum{
+    position:fixed; inset:0; z-index:60; display:none;
+    align-items:flex-start; justify-content:center;
+    background:rgba(40,20,5,.7); overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:calc(12px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  #kurulum.show{ display:flex; animation:popIn .22s ease; }
+
+  #extras .kutu, #kurulum .kutu{
     background:linear-gradient(160deg,#fffaf0,#ffeccd);
     border-radius:26px; padding:18px 14px 20px; width:100%; max-width:660px; margin:auto;
     box-shadow:0 14px 0 #d8a441, 0 26px 50px rgba(0,0,0,.35);
@@ -309,6 +317,39 @@
   #extras .panel{ width:100%; margin-bottom:0; }
   #extras .legend{ margin-top:4px; }
   .kapat-btn{ font-size:18px; padding:14px 30px; background:var(--green); box-shadow:0 5px 0 #2b8036; margin-top:6px; }
+
+  /* ---------- "Ana Ekrana Ekle" kartı ---------- */
+  .kur-btn{
+    background:var(--gold); box-shadow:0 5px 0 #b87b00; font-size:16px;
+    padding:13px 20px; width:100%; max-width:420px;
+  }
+  #kurulum .kutu{ max-width:460px; text-align:center; }
+  #kurulum .big{ font-size:52px; display:block; animation:bounce 1.6s infinite; }
+  #kurulum h2{ color:var(--brown); font-size:22px; }
+  #kurulum .nicin{ color:#7a4a1d; font-size:14px; font-weight:700; line-height:1.55; }
+  .adimlar{ display:flex; flex-direction:column; gap:10px; width:100%; margin:4px 0 2px; }
+  .adim{
+    display:flex; align-items:center; gap:11px; text-align:left;
+    background:#fff; border-radius:16px; padding:11px 13px;
+    box-shadow:0 3px 0 rgba(180,120,60,.25);
+    color:var(--brown); font-size:14.5px; font-weight:700; line-height:1.4;
+  }
+  .adim .no{
+    flex:0 0 28px; height:28px; border-radius:50%; background:var(--gold); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:900;
+  }
+  .adim .simge{ flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:21px; width:26px; }
+  .adim svg{ width:20px; height:24px; fill:none; stroke:#0a84ff; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .kur-not{ color:#8a6339; font-size:12.5px; font-weight:700; line-height:1.5; }
+  .kur-tamam{ color:#2b8036; font-size:15px; font-weight:800; }
+
+  /* Ayar düğmesinde "bak buraya" noktası */
+  .ayar-btn{ position:relative; }
+  .ayar-btn.yeni::after{
+    content:''; position:absolute; top:2px; right:3px; width:9px; height:9px;
+    border-radius:50%; background:#e74c3c; box-shadow:0 0 0 2px #fff;
+    animation:blink 1s infinite;
+  }
 
   /* Alçak/dar ekranda ayar düğmesi de küçülsün */
   @media (max-width:430px), (max-height:520px){
@@ -410,6 +451,9 @@
     <h1>🐭 Fare ve Peynir 🧀</h1>
     <div class="subtitle">40 bölümlük büyük macera! Peyniri bul, yıldızları topla, kediden kaç!</div>
 
+    <button class="kur-btn" id="kurBtn" onclick="showInstall()">📲 Ana Ekrana Ekle — tam ekran oyna</button>
+    <div class="kur-tamam" id="kurTamam" hidden>✅ Oyun ana ekranında — tam ekran oynuyorsun!</div>
+
     <div class="panel">
       <div class="row">
         <button class="hint-btn" onclick="showHintFlash(); toggleExtras()">💡 Yardım Et</button>
@@ -465,6 +509,23 @@
     </div>
 
     <button class="kapat-btn" onclick="toggleExtras()">▶️ Oyuna Dön</button>
+  </div>
+</div>
+
+<!-- ============ ANA EKRANA EKLE: cihaza gore adim adim ============ -->
+<div class="overlay" id="kurulum">
+  <div class="kutu">
+    <span class="big">📲</span>
+    <h2>Ana Ekrana Ekle</h2>
+    <div class="nicin">
+      Oyunu ana ekrana eklersen kendi simgesiyle <b>tam ekran</b> açılır:
+      adres çubuğu kaybolur, labirent büyür, tek dokunuşla girersin.
+      İnternet olmasa bile açılır.
+    </div>
+    <div class="adimlar" id="kurulumAdim"></div>
+    <div class="kur-not" id="kurulumNot"></div>
+    <button id="kurulumBtn" class="kur-btn" hidden onclick="nativeInstall()">📲 Şimdi Yükle</button>
+    <button class="kapat-btn" onclick="hideInstall()">Tamam</button>
   </div>
 </div>
 
@@ -786,12 +847,145 @@ function togglePad(){
 }
 
 /* --- Ayarlar cekmecesi: tablette oyun tek ekrana sigsin diye kapali basliyor --- */
+
+/* ==========================================================
+   ANA EKRANA EKLE - cihaza gore adim adim anlatim
+   Tarayicida oyun adres cubugunun altinda kaliyor; ana ekrana
+   eklenince tam ekran, kendi simgesiyle ve cevrimdisi aciliyor.
+   iPad/iPhone'da bunu tarayici API'si ile yapmak MUMKUN DEGIL,
+   kullaniciya Paylas menusunu tarif etmek tek yol.
+   ========================================================== */
+let kurulumOlayi = null;          // Android'de gercek yukleme penceresi
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  kurulumOlayi = e;
+  if (kurulumAcik()) kurulumDoldur();
+});
+window.addEventListener('appinstalled', () => {
+  kurulumOlayi = null;
+  kurulumDurumTazele();
+  bubbleText('Yasasin, art\u0131k ana ekrandayim! 🎉');
+});
+
+function ekliMi(){
+  try{
+    if (window.navigator.standalone === true) return true;                 // iOS
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) return true;
+  }catch(e){}
+  return false;
+}
+
+function cihazTipi(){
+  const ua = navigator.userAgent || '';
+  // iPad iOS 13+ kendini "Macintosh" diye tanitiyor - dokunma noktasindan anliyoruz
+  const iOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (iOS){
+    const tablet = /iPad/.test(ua) || /Macintosh/.test(ua);
+    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+    return safari ? (tablet ? 'ipad' : 'iphone') : 'ios-baska';
+  }
+  if (/Android/.test(ua)) return 'android';
+  return 'masaustu';
+}
+
+// iOS Paylas simgesi (kare icinden cikan yukari ok)
+const PAYLAS_SVG = '<svg viewBox="0 0 24 28" aria-hidden="true">' +
+  '<path d="M12 2.5 L12 17"/><path d="M7.5 7 L12 2.5 L16.5 7"/>' +
+  '<path d="M5.5 12 H4 a1.5 1.5 0 0 0 -1.5 1.5 V24 A1.5 1.5 0 0 0 4 25.5 H20 A1.5 1.5 0 0 0 21.5 24 V13.5 A1.5 1.5 0 0 0 20 12 H18.5"/></svg>';
+
+function adim(no, simge, metin){
+  return '<div class="adim"><span class="no">' + no + '</span>' +
+         '<span class="simge">' + simge + '</span><span>' + metin + '</span></div>';
+}
+
+function kurulumDoldur(){
+  const kutu = document.getElementById('kurulumAdim');
+  const not  = document.getElementById('kurulumNot');
+  const btn  = document.getElementById('kurulumBtn');
+  const tip  = cihazTipi();
+  let html = '', notu = '';
+
+  if (ekliMi()){
+    html = '<div class="adim"><span class="no">\u2713</span><span class="simge">🎉</span>' +
+           '<span>Haz\u0131rs\u0131n! Oyun zaten ana ekrandan, tam ekran a\u00e7\u0131l\u0131yor.</span></div>';
+  } else if (tip === 'iphone' || tip === 'ipad'){
+    const yer = (tip === 'ipad') ? 'Sağ üstteki' : 'Ekranın altındaki';
+    html = adim(1, PAYLAS_SVG, yer + ' <b>Payla\u015f</b> d\u00fc\u011fmesine bas')
+         + adim(2, '\u2795', 'A\u00e7\u0131lan listeyi yukar\u0131 kayd\u0131r, <b>Ana Ekrana Ekle</b>\u2019ye bas')
+         + adim(3, '\u2705', 'Sa\u011f \u00fcstteki <b>Ekle</b>\u2019ye bas \u2014 bitti!');
+    notu = 'Sonra oyunu ana ekrandaki 🐭 simgesinden a\u00e7. Adres \u00e7ubu\u011fu olmayacak.';
+  } else if (tip === 'ios-baska'){
+    html = adim(1, '🧭', 'Bu sayfay\u0131 <b>Safari</b> ile a\u00e7 (iPhone/iPad\u2019de ana ekrana ekleme yaln\u0131zca Safari\u2019de \u00e7al\u0131\u015f\u0131yor)')
+         + adim(2, PAYLAS_SVG, 'Alttaki <b>Payla\u015f</b> d\u00fc\u011fmesine bas')
+         + adim(3, '\u2795', '<b>Ana Ekrana Ekle</b> \u2192 <b>Ekle</b>');
+  } else if (tip === 'android'){
+    html = adim(1, '\u22ee', 'Sa\u011f \u00fcstteki <b>\u22ee</b> men\u00fcs\u00fcne bas')
+         + adim(2, '📲', '<b>Ana ekrana ekle</b> (ya da <b>Uygulamay\u0131 y\u00fckle</b>) se\u00e7ene\u011fine bas')
+         + adim(3, '\u2705', '<b>Ekle</b>\u2019ye bas \u2014 bitti!');
+    notu = kurulumOlayi
+      ? 'Ya da a\u015fa\u011f\u0131daki d\u00fc\u011fmeye bas, taray\u0131c\u0131 senin yerine yaps\u0131n.'
+      : 'Oyun ana ekrandaki 🐭 simgesinden tam ekran a\u00e7\u0131l\u0131r.';
+  } else {
+    html = adim(1, '🖥\ufe0f', 'Bu kart telefon ve tabletler i\u00e7in \u2014 bilgisayarda oyun zaten b\u00fcy\u00fck a\u00e7\u0131l\u0131yor')
+         + adim(2, '\u2b07\ufe0f', 'Chrome/Edge kullan\u0131yorsan adres \u00e7ubu\u011fundaki <b>Y\u00fckle</b> simgesiyle uygulama gibi kurabilirsin');
+  }
+
+  kutu.innerHTML = html;
+  not.innerHTML  = notu;
+  not.hidden     = !notu;
+  btn.hidden     = !(kurulumOlayi && !ekliMi());
+}
+
+function kurulumAcik(){ return document.getElementById('kurulum').classList.contains('show'); }
+function showInstall(){
+  kurulumDoldur();
+  document.getElementById('kurulum').classList.add('show');
+}
+function hideInstall(){ document.getElementById('kurulum').classList.remove('show'); }
+
+function nativeInstall(){
+  if (!kurulumOlayi) return;
+  try{
+    kurulumOlayi.prompt();
+    kurulumOlayi.userChoice.then(() => { kurulumOlayi = null; hideInstall(); kurulumDurumTazele(); });
+  }catch(e){ }
+}
+
+// Ayarlardaki dugme/rozet: zaten ekliyse tebrik yazisi gosteriliyor
+function kurulumDurumTazele(){
+  const ekli = ekliMi();
+  const btn  = document.getElementById('kurBtn');
+  const iyi  = document.getElementById('kurTamam');
+  if (btn) btn.hidden = ekli;
+  if (iyi) iyi.hidden = !ekli;
+}
+
+/* Ilk ziyarette bir kez hatirlatma: farenin agzindan, yer kaplamadan. */
+function kurulumHatirlat(){
+  if (ekliMi()) return;
+  let gosterildi = false;
+  try{ gosterildi = localStorage.getItem('fpo_ekle') === '1'; }catch(e){}
+  if (gosterildi) return;
+  const tip = cihazTipi();
+  if (tip === 'masaustu') return;
+  bubbleText('Beni ana ekrana ekle, tam ekran oynayal\u0131m! \u2699\ufe0f \u2192 📲');
+  const btn = document.getElementById('extrasBtn');
+  if (btn) btn.classList.add('yeni');
+}
+function hatirlatmaBitti(){
+  try{ localStorage.setItem('fpo_ekle', '1'); }catch(e){}
+  const btn = document.getElementById('extrasBtn');
+  if (btn) btn.classList.remove('yeni');
+}
+
 function ayarlarAcik(){ return document.getElementById('extras').classList.contains('show'); }
 function toggleExtras(){
   const box = document.getElementById('extras');
   const acilsin = !box.classList.contains('show');
   box.classList.toggle('show', acilsin);
-  if (acilsin) box.scrollTop = 0;
+  if (acilsin){ box.scrollTop = 0; kurulumDurumTazele(); hatirlatmaBitti(); }
   if (grid.length) render();
 }
 
@@ -1538,7 +1732,7 @@ function press(dr, dc){ unlockAudio(); tryMove(dr, dc); }
 function tryMove(dr, dc){
   if (won || gameFailed) return;
   if (document.getElementById('overlay').classList.contains('show')) return;
-  if (ayarlarAcik()) return;
+  if (ayarlarAcik() || kurulumAcik()) return;
 
   const nr = mouse.r + dr, nc = mouse.c + dc;
 
@@ -1777,6 +1971,10 @@ function showHintFlash(){
    13) KLAVYE + DOKUNMA
    ========================================================== */
 document.addEventListener('keydown', e => {
+  if (kurulumAcik()){
+    if (['escape','enter',' '].includes(e.key.toLowerCase())){ hideInstall(); e.preventDefault(); }
+    return;
+  }
   if (ayarlarAcik()){
     if (['escape','enter',' '].includes(e.key.toLowerCase())){ toggleExtras(); e.preventDefault(); }
     return;
@@ -2039,6 +2237,9 @@ setTimeout(() => {
   if (currentLevel > 0) bubbleText('Tekrar hoş geldin! Bölüm ' + (currentLevel + 1) + '\'den devam ediyoruz! 🧀');
   else bubbleText('Merhaba! Ben açım. Bana peyniri bulmama yardım eder misin? 🧀');
 }, 700);
+
+kurulumDurumTazele();
+setTimeout(kurulumHatirlat, 15000);   // oyuna dalsin, sonra hatirlatalim
 </script>
 </body>
 </html>

@@ -33,12 +33,20 @@ arkasında.
 Tarayıcının adres çubuğu ekranda yer kaplıyor. Ana ekrana eklersen oyun
 tam ekran, kendi simgesiyle açılır:
 
-- **iPad (Safari):** Paylaş <kbd>⬆️</kbd> → *Ana Ekrana Ekle*
-- **Android (Chrome):** ⋮ menüsü → *Ana ekrana ekle*
+Oyun bunu kendisi anlatıyor: ⚙️ → **📲 Ana Ekrana Ekle** düğmesi, cihazını
+tanıyıp adım adım gösteriyor (iPhone/iPad'de Paylaş menüsü, Android'de ⋮
+menüsü; Android'de destekleniyorsa tek düğmeyle kurar). İlk açılıştan 15 saniye
+sonra fare bir kez hatırlatıyor, sonra bir daha rahatsız etmiyor. Oyun zaten
+ana ekrandan açılıyorsa hiç görünmüyor.
 
-Android'de oyun ilk dokunuşta kendiliğinden tam ekrana geçer; istemezsen
-⚙️ → **⛶ Tam ekran** ile kapatırsın, tercih hatırlanır. iPad Safari sayfalar
-için tam ekranı desteklemiyor, orada tek yol Ana Ekrana Ekle.
+Kısaca:
+
+- **iPhone / iPad (Safari):** Paylaş <kbd>⬆️</kbd> → *Ana Ekrana Ekle* → *Ekle*
+- **Android (Chrome):** ⋮ menüsü → *Ana ekrana ekle* → *Ekle*
+
+Android'de oyun ilk dokunuşta kendiliğinden tam ekrana da geçer; istemezsen
+⚙️ → **⛶ Tam ekran** ile kapatırsın, tercih hatırlanır. iPhone ve iPad'de
+Safari sayfalar için tam ekranı desteklemiyor — orada tek yol Ana Ekrana Ekle.
 
 ### Özellikler
 
