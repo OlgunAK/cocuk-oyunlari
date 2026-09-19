@@ -20,6 +20,11 @@ tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it.
   hızlı gider.
 - Oklar yer kaplıyorsa **🎮 Tuşlar** düğmesiyle kapat: labirent büyür, parmakla
   oynamaya devam edersin. Tercih hatırlanır.
+
+Oyun ekranında sadece labirent, oklar ve üstte küçük bir bilgi şeridi durur.
+Geri kalan her şey — yardım, baştan başlat, zorluk, kahraman, 40 bölümün
+listesi, çıkartmalar, müzik ve ses ayarları — sağ üstteki **⚙️** düğmesinin
+arkasında.
 - Klavye bağlıysa: yön tuşları / WASD, `H` yardım, `R` baştan, `M` müzik,
   `V` konuşma, `Enter` devam.
 
@@ -30,8 +35,10 @@ tam ekran, kendi simgesiyle açılır:
 
 - **iPad (Safari):** Paylaş <kbd>⬆️</kbd> → *Ana Ekrana Ekle*
 - **Android (Chrome):** ⋮ menüsü → *Ana ekrana ekle*
-  (Android'de ayrıca oyunun içindeki **⛶ Tam ekran** düğmesi de çalışır;
-  iPad Safari sayfalar için tam ekranı desteklemediğinden orada o düğme görünmez.)
+
+Android'de oyun ilk dokunuşta kendiliğinden tam ekrana geçer; istemezsen
+⚙️ → **⛶ Tam ekran** ile kapatırsın, tercih hatırlanır. iPad Safari sayfalar
+için tam ekranı desteklemiyor, orada tek yol Ana Ekrana Ekle.
 
 ### Özellikler
 

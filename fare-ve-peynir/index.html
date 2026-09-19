@@ -63,7 +63,10 @@
     100%{ transform:translateY(-115vh) rotate(360deg); opacity:0; }
   }
 
-  .app{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; width:100%; }
+  .app{
+    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center;
+    width:100%; flex:1 1 auto;        /* ekranin tamamini kapla */
+  }
 
   h1{
     color:#fff; font-size:clamp(22px,5.5vw,36px); letter-spacing:1px;
@@ -199,12 +202,14 @@
 
   /* ---------- sahne: tahta + yön tuşları ---------- */
   .stage{
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:10px; width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+    gap:10px; width:100%; flex:1 1 auto;
   }
+  /* Dikeyde artan bosluk ALTTA kalsin: tahta yukarida, yon tuslari
+     ekranin dibinde - basparmak orada duruyor. */
   /* Yatay tablette yön tuşları tahtanın SAĞINDA dursun - başparmak orada olur */
   @media (orientation:landscape) and (min-width:700px){
-    .stage{ flex-direction:row; gap:18px; }
+    .stage{ flex-direction:row; justify-content:center; align-items:center; gap:18px; }
   }
 
   /* Yön tuşları + alt düğmeler tek sütun: dikeyde tahtanın altına,
@@ -284,11 +289,38 @@
     100%{ transform:translateY(105vh) rotate(720deg); opacity:.9; }
   }
 
-  /* ---------- ayarlar çekmecesi ---------- */
-  #extras{ display:flex; flex-direction:column; align-items:center; width:100%; }
-  #extras[hidden]{ display:none; }
-  #toolbar button{ font-size:15px; }
-  @media (max-width:480px){ #toolbar button{ font-size:13px; padding:9px 10px; } }
+  /* ---------- ayarlar katmanı (⚙️ ile açılır, her şey burada) ---------- */
+  #extras{
+    position:fixed; inset:0; z-index:55; display:none;
+    align-items:flex-start; justify-content:center;
+    background:rgba(40,20,5,.62); overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:calc(12px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  #extras.show{ display:flex; animation:popIn .22s ease; }
+  #extras .kutu{
+    background:linear-gradient(160deg,#fffaf0,#ffeccd);
+    border-radius:26px; padding:18px 14px 20px; width:100%; max-width:660px; margin:auto;
+    box-shadow:0 14px 0 #d8a441, 0 26px 50px rgba(0,0,0,.35);
+    display:flex; flex-direction:column; align-items:center; gap:9px;
+  }
+  /* Krem zeminde beyaz baslik okunmuyordu */
+  #extras h1{ font-size:clamp(20px,5vw,30px); color:var(--brown); text-shadow:none; }
+  #extras .subtitle{ margin-bottom:4px; }
+  #extras .panel{ width:100%; margin-bottom:0; }
+  #extras .legend{ margin-top:4px; }
+  .kapat-btn{ font-size:18px; padding:14px 30px; background:var(--green); box-shadow:0 5px 0 #2b8036; margin-top:6px; }
+
+  /* Alçak/dar ekranda ayar düğmesi de küçülsün */
+  @media (max-width:430px), (max-height:520px){
+    .ayar-btn{ min-height:30px; font-size:17px; padding:0 10px; }
+  }
+
+  /* ---------- üst şerit: HUD + ayar düğmesi ---------- */
+  #topbar{ width:auto; max-width:100%; }
+  .ayar-btn{
+    font-size:20px; padding:0 12px; min-height:34px; border-radius:12px;
+    background:var(--brown); color:var(--cream); box-shadow:0 3px 0 #3d2817;
+  }
 
   /* ---------- dar ekran (telefon): cerceve kisilsin, tahta buyusun ---------- */
   @media (max-width:560px){
@@ -310,10 +342,6 @@
     .hud{ font-size:12px; gap:4px; }
     .hud .box{ padding:4px 8px; gap:4px; }
     .hud.panel{ padding:5px 7px; }
-    /* Alt dugmeler simge olsun: dort satir yerine tek satir */
-    #toolbar button .ad{ display:none; }
-    #toolbar button{ font-size:21px; padding:10px 13px; }
-    #toolbar.panel{ padding:6px 8px; }
   }
 
   /* Alçak ekran (yatay tablet / telefon): başlık yer kaplamasın */
@@ -325,16 +353,12 @@
   }
   /* Çok alçak (telefon yatay): tahtaya kalan her pikseli ver */
   @media (max-height:520px){
-    #head{ display:none; }
     #bubble{ height:0; margin:0; overflow:visible; }   /* balon tahtanın üstüne taşsın */
     .speech{ position:relative; z-index:6; }
     #levelName{ display:none; }
     .hud{ font-size:12px; gap:4px; }
     .hud .box{ padding:4px 8px; gap:4px; }
     .hud.panel{ padding:5px 7px; margin-bottom:5px; }
-    #toolbar button .ad{ display:none; }
-    #toolbar button{ font-size:20px; padding:9px 12px; min-height:42px; }
-    #toolbar.panel{ padding:5px 7px; }
   }
 
   /* Tablette "Hareketi azalt" açıksa animasyonları kıs - kare kaybı olmasın */
@@ -351,19 +375,16 @@
 <div id="bgdeco"></div>
 <div id="confetti"></div>
 
+<!-- ============ OYUN EKRANI: sadece labirent, oklar ve kucuk bir ayar dugmesi ============ -->
 <div class="app">
-  <div id="head">
-    <h1>🐭 Fare ve Peynir 🧀</h1>
-    <div class="subtitle">40 bölümlük büyük macera! Peyniri bul, yıldızları topla, kediden kaç!</div>
-  </div>
-
-  <div class="hud panel" id="hudBar">
+  <div class="hud panel" id="topbar">
     <span class="box">🗺️ <b id="levelNum">1</b>/<b id="levelMax">13</b> <span id="levelName">—</span></span>
     <span class="box">👣 <b id="moves">0</b></span>
     <span class="box">⭐ <b id="stars">0</b>/<b id="totalStars">0</b></span>
     <span class="box">🏆 <b id="score">0</b></span>
     <span class="box">❤️ <b id="hearts">3</b></span>
     <span class="box" id="limitBox" style="display:none">⏳ <b id="limit">0</b></span>
+    <button id="extrasBtn" class="ayar-btn" onclick="toggleExtras()" aria-label="Ayarlar">⚙️</button>
   </div>
 
   <div id="bubble"></div>
@@ -379,20 +400,36 @@
         <button class="right" data-dr="0"  data-dc="1"  aria-label="Sağ">➡️</button>
         <button class="down"  data-dr="1"  data-dc="0"  aria-label="Aşağı">⬇️</button>
       </div>
-
-      <div class="row panel" id="toolbar">
-        <button class="hint-btn" onclick="showHintFlash()">💡<span class="ad"> Yardım</span></button>
-        <button onclick="restartLevel()">🔄<span class="ad"> Baştan</span></button>
-        <button id="padBtn" onclick="togglePad()">🎮<span class="ad"> Tuşlar</span></button>
-        <button id="muteBtn" class="sound-btn" onclick="toggleMute()">🔊<span class="ad"> Müzik</span></button>
-        <button id="fsBtn" class="help-btn" onclick="toggleFullscreen()" hidden>⛶<span class="ad"> Tam ekran</span></button>
-        <button id="extrasBtn" onclick="toggleExtras()">⚙️<span class="ad"> Ayarlar</span></button>
-      </div>
     </div>
   </div>
+</div>
 
-  <div id="extras" hidden>
-    <div class="panel" style="margin-top:10px">
+<!-- ============ AYARLAR: ⚙️ ile acilir, geri kalan HER SEY burada ============ -->
+<div class="overlay" id="extras">
+  <div class="kutu">
+    <h1>🐭 Fare ve Peynir 🧀</h1>
+    <div class="subtitle">40 bölümlük büyük macera! Peyniri bul, yıldızları topla, kediden kaç!</div>
+
+    <div class="panel">
+      <div class="row">
+        <button class="hint-btn" onclick="showHintFlash(); toggleExtras()">💡 Yardım Et</button>
+        <button onclick="restartLevel(); toggleExtras()">🔄 Baştan</button>
+        <button onclick="skipLevel(); toggleExtras()">⏭️ Atla</button>
+        <button onclick="startGame()">🆕 Yeni Oyun</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <button id="padBtn" onclick="togglePad()">🎮 Tuşlar</button>
+        <button id="fsBtn" class="help-btn" onclick="toggleFullscreen()" hidden>⛶ Tam ekran</button>
+        <button id="muteBtn" class="sound-btn" onclick="toggleMute()">🔊 Müzik</button>
+        <button id="trackBtn" class="sound-btn" onclick="changeTrack()">🎵 Für Elise</button>
+        <button id="voiceBtn" class="help-btn" onclick="toggleVoice()">🗣️ Konuşma</button>
+      </div>
+    </div>
+
+    <div class="panel">
       <div class="row">
         <button class="diff-btn active" data-diff="easy"   onclick="setDifficulty('easy')">😊 Kolay</button>
         <button class="diff-btn"        data-diff="normal" onclick="setDifficulty('normal')">🙂 Orta</button>
@@ -404,15 +441,6 @@
         <button class="chip" data-hero="🐹" onclick="setHero('🐹')">🐹</button>
         <button class="chip" data-hero="🐰" onclick="setHero('🐰')">🐰</button>
         <button class="chip" data-hero="🐿️" onclick="setHero('🐿️')">🐿️</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="row">
-        <button onclick="skipLevel()">⏭️ Atla</button>
-        <button onclick="startGame()">🆕 Yeni Oyun</button>
-        <button id="voiceBtn" class="help-btn" onclick="toggleVoice()">🗣️ Konuşma</button>
-        <button id="trackBtn" class="sound-btn" onclick="changeTrack()">🎵 Für Elise</button>
       </div>
     </div>
 
@@ -429,12 +457,14 @@
     <div class="legend">
       🐭 sen • 🧀 peynir (hedef) • 🐱 kedi (kaç!) • 🕳️ tuzak (basma!) • ❄️ buz (kayarsın) •
       🌀 portal (ışınlanır) • ⭐ yıldız (topla) • 🔑 anahtar • 🚪 kapı • 📦 kutu (ittir) • 🟩 hedef alan (kutuyu buraya it, peynirin kilidi açılır!)
-      <br><b>Tablette nasıl oynanır:</b> Labirentin üzerinde parmağını kaydır 👆 — parmağını kaldırmadan sürüklersen fare yürümeye devam eder.
-      Farenin <b>yanındaki kareye dokunursan</b> oraya bir adım atar. Ya da büyük yön tuşlarına bas (basılı tutunca hızlı gider).
-      <br><b>Tam ekran:</b> Android tablette ⛶ düğmesi • iPad'de Safari → Paylaş → <i>Ana Ekrana Ekle</i>, sonra simgeden aç.
+      <br><b>Nasıl oynanır:</b> Labirentin üzerinde parmağını kaydır 👆 — parmağını kaldırmadan sürüklersen fare yürümeye devam eder.
+      Farenin <b>yanındaki kareye dokunursan</b> oraya bir adım atar. Yön tuşlarını basılı tutunca hızlı gider; istemezsen <b>🎮 Tuşlar</b> ile kapat, labirent büyür.
+      <br><b>Tam ekran:</b> Android'de kendiliğinden açılır (⛶ ile kapatılır) • iPad'de Safari → Paylaş → <i>Ana Ekrana Ekle</i>, sonra simgeden aç.
       <br>Klavye bağlıysa: Yön tuşları / WASD • Enter devam • H yardım • R baştan • M müzik • V konuşma
       <br>💾 Oyun otomatik kaydedilir, kaldığın yerden devam edersin!
     </div>
+
+    <button class="kapat-btn" onclick="toggleExtras()">▶️ Oyuna Dön</button>
   </div>
 </div>
 
@@ -681,7 +711,19 @@ function primeSpeech(){
   }catch(e){}
   pickVoice();
 }
-function unlockAll(){ unlockAudio(); primeSpeech(); keepAwake(); }
+function unlockAll(){ unlockAudio(); primeSpeech(); keepAwake(); otoTamEkran(); }
+
+/* Tam ekran kullanici hareketi olmadan acilamaz - ilk dokunusta bir kez
+   deniyoruz. Kullanici cikarsa geri zorlamiyoruz. iPad Safari bunu hic
+   desteklemiyor, orada "Ana Ekrana Ekle" gerekiyor. */
+let fsTercih = true, fsDenendi = false;
+function otoTamEkran(){
+  if (fsDenendi || !fsTercih || !fsSupported()) return;
+  if (!('ontouchstart' in window) && !navigator.maxTouchPoints) return;  // masaustunde zorlama
+  fsDenendi = true;
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  toggleFullscreen();
+}
 document.addEventListener('keydown', unlockAudio);
 document.addEventListener('pointerdown', unlockAll);
 document.addEventListener('touchend', unlockAll);      // pointer olayi yoksa yedek
@@ -707,6 +749,9 @@ function fsSupported(){
 function toggleFullscreen(){
   const d = document.documentElement;
   const acik = document.fullscreenElement || document.webkitFullscreenElement;
+  fsDenendi = true;
+  fsTercih = !acik;
+  try{ localStorage.setItem('fpo_fs', fsTercih ? '1' : '0'); }catch(e){}
   try{
     if (!acik){
       if (d.requestFullscreen) d.requestFullscreen({ navigationUI:'hide' });
@@ -726,7 +771,7 @@ function applyPad(){
   if (pad){ if (padVisible) pad.removeAttribute('hidden'); else pad.setAttribute('hidden',''); }
   const btn = document.getElementById('padBtn');
   if (btn){
-    btnYaz(btn, padVisible ? '🎮' : '👆', padVisible ? 'Tuşlar' : 'Kaydır');
+    btnYaz(btn, padVisible ? '🎮' : '👆', padVisible ? 'Tuşlar açık' : 'Tuşlar kapalı');
     btn.classList.toggle('off', !padVisible);
   }
 }
@@ -741,13 +786,12 @@ function togglePad(){
 }
 
 /* --- Ayarlar cekmecesi: tablette oyun tek ekrana sigsin diye kapali basliyor --- */
+function ayarlarAcik(){ return document.getElementById('extras').classList.contains('show'); }
 function toggleExtras(){
   const box = document.getElementById('extras');
-  const btn = document.getElementById('extrasBtn');
-  const acik = box.hasAttribute('hidden');
-  if (acik) box.removeAttribute('hidden'); else box.setAttribute('hidden','');
-  btnYaz(btn, acik ? '✖️' : '⚙️', acik ? 'Kapat' : 'Ayarlar');
-  if (acik) setTimeout(() => box.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+  const acilsin = !box.classList.contains('show');
+  box.classList.toggle('show', acilsin);
+  if (acilsin) box.scrollTop = 0;
   if (grid.length) render();
 }
 
@@ -1356,7 +1400,7 @@ function fitBoard(cols, rows){
 
   // Bu parcalarin boyu hucre boyutuna bagli DEGIL, o yuzden olcup cikarabiliyoruz
   let sabitH = 0;
-  ['head','hudBar','bubble'].forEach(id => {
+  ['topbar','bubble'].forEach(id => {
     const el = document.getElementById(id);
     if (el && el.offsetParent !== null) sabitH += el.getBoundingClientRect().height + 10;
   });
@@ -1494,6 +1538,7 @@ function press(dr, dc){ unlockAudio(); tryMove(dr, dc); }
 function tryMove(dr, dc){
   if (won || gameFailed) return;
   if (document.getElementById('overlay').classList.contains('show')) return;
+  if (ayarlarAcik()) return;
 
   const nr = mouse.r + dr, nc = mouse.c + dc;
 
@@ -1732,6 +1777,10 @@ function showHintFlash(){
    13) KLAVYE + DOKUNMA
    ========================================================== */
 document.addEventListener('keydown', e => {
+  if (ayarlarAcik()){
+    if (['escape','enter',' '].includes(e.key.toLowerCase())){ toggleExtras(); e.preventDefault(); }
+    return;
+  }
   if (document.getElementById('overlay').classList.contains('show')){
     if (['enter',' ','escape','arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(e.key.toLowerCase())){
       closeModal(); e.preventDefault();
@@ -1980,6 +2029,7 @@ window.addEventListener('pagehide', saveProgress);
 
 loadProgress();
 try{ padVisible = localStorage.getItem('fpo_pad') !== '0'; }catch(e){}
+try{ fsTercih   = localStorage.getItem('fpo_fs')  !== '0'; }catch(e){}
 applyPad();
 document.getElementById('levelMax').textContent = levels.length;
 hearts = maxHearts();
