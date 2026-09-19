@@ -425,6 +425,7 @@
     <span class="box">🏆 <b id="score">0</b></span>
     <span class="box">❤️ <b id="hearts">3</b></span>
     <span class="box" id="limitBox" style="display:none">⏳ <b id="limit">0</b></span>
+    <span class="box" id="sureBox" style="display:none">⏰ <b id="sayac">0</b></span>
     <button id="extrasBtn" class="ayar-btn" onclick="toggleExtras()" aria-label="Ayarlar">⚙️</button>
   </div>
 
@@ -449,7 +450,7 @@
 <div class="overlay" id="extras">
   <div class="kutu">
     <h1>🐭 Fare ve Peynir 🧀</h1>
-    <div class="subtitle">40 bölümlük büyük macera! Peyniri bul, yıldızları topla, kediden kaç!</div>
+    <div class="subtitle">60 bölümlük büyük macera! Peyniri bul, yıldızları topla, kediden kaç, saate yetiş!</div>
 
     <button class="kur-btn" id="kurBtn" onclick="showInstall()">📲 Ana Ekrana Ekle — tam ekran oyna</button>
     <div class="kur-tamam" id="kurTamam" hidden>✅ Oyun ana ekranında — tam ekran oynuyorsun!</div>
@@ -722,6 +723,8 @@ function sfxIce()   { playNote(1700, 0.04, 0, 'sine', 0.1); }
 function sfxBox()   { playNote(200, 0.15, 0, 'sawtooth', 0.18); }
 function sfxTrap()  { playNote(150, 0.3, 0, 'sawtooth', 0.35); playNote(100, 0.4, 0.1, 'sawtooth', 0.28); }
 function sfxCat()   { playNote(320, 0.15, 0, 'square', 0.3); playNote(210, 0.22, 0.1, 'square', 0.3); }
+function sfxTik()   { playNote(1000, 0.05, 0, 'square', 0.16); }
+function sfxKediAdim(){ playNote(260, 0.06, 0, 'triangle', 0.10); }
 function sfxDoor()  { playNote(260, 0.2, 0, 'sawtooth', 0.22); playNote(420, 0.22, 0.14, 'sine', 0.22); }
 function sfxWin()   { [['C5',0.12],['E5',0.12],['G5',0.12],['C6',0.28]].reduce((t,[n,d])=>{ playNote(N[n], d, t, 'triangle', 0.3); return t+d; }, 0); }
 function sfxLevelUp(){ ['C5','E5','G5','C5','E5','G5','B5','C6'].forEach((n,i)=>playNote(N[n], 0.16, i*0.08, 'triangle', 0.24)); }
@@ -1008,6 +1011,7 @@ const phrases = {
   cat:   ['Kediii! Kaçalım! 🐱','Miyav sesi geliyor!','Beni yakalamasın!'],
   near:  ['Kedi çok yakın, hızlı ol! 😨','Miyav! Arkamda kedi var!'],
   fail:  ['Bu seferlik olmadı, tekrar deneyelim! 😊','Üzülme, yeniden başlıyoruz! 💪','Herkes hata yapar, hadi tekrar!'],
+  acele: ['Son on saniye, koş koş! ⏰','Zaman bitiyoooor! 😨','Çabuk ol, saat işliyor!'],
 };
 let lastPhrase = '';
 function say(category, chance = 1.0, alsoSpeak = true){
@@ -1417,18 +1421,222 @@ const levels = [
     [0,1,1,1,1,1,1,1,1,1,0],
     [8,0,0,0,0,0,0,0,0,0,3],
   ]},
+
+  /* ====== 41-60: ZAMANA KARSI ve KOVALAMACA ======
+     sure:<saniye>    -> geri sayan saat; sifirlanirsa bir can gider
+     kediSure:<ms>    -> kedi biz hareket etmesek de bu araliklarla bir adim atar
+     Ikisi de zorluga gore olcekleniyor (bkz. diffConfig). ====== */
+  {name:'Tik Tak Başlıyor', tip:'Saat işliyor! Peynire vakit dolmadan yetiş.', sure:70, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Tetikte Kedi', tip:'Bu kedi sen dursan bile yürüyor. Durma!', kediSure:3500, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Yıldız Yarışı', tip:'Yıldızları topla ama saate de bak!', sure:50, grid:[
+    [2,0,0,0,8,0,0,0,0],
+    [0,1,1,0,1,0,1,1,0],
+    [0,0,1,0,0,0,1,0,0],
+    [8,0,1,1,1,1,1,0,8],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,0,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Kaçış Koridoru', tip:'Kedi koridorda peşinde! Zikzak çiz.', kediSure:3000, grid:[
+    [2,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1,1,0],
+    [4,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Buzda Yarış', tip:'Buzda kayarken zaman durmuyor!', sure:80, grid:[
+    [2,6,6,6,6,6,6,6,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,6,6,6,6,6,6,6,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,0,3],
+  ]},
+  {name:'Kedi ve Buz', tip:'Buzda kayarsın, kedi kaymaz. Dikkat!', kediSure:3200, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,6,6,6,6,6,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,0,1,1,1,0,1,0],
+    [0,0,0,1,4,1,0,0,0],
+    [0,1,0,1,1,1,0,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,6,6,6,6,6,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Portal Kaçamağı', tip:'Kedi yaklaşınca portala atla!', kediSure:3000, grid:[
+    [2,0,0,1,0,0,0,0,7],
+    [0,1,0,1,0,1,1,1,0],
+    [0,1,0,0,0,1,0,0,0],
+    [0,1,1,1,1,1,0,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,0,1,1,1,1,0],
+    [7,0,0,0,0,4,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Anahtar Yarışı', tip:'Önce anahtar, sonra kapı — hem de hızlı!', sure:55, grid:[
+    [2,0,0,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,10,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Hızlı Kedi', tip:'Bu kedi çok hızlı! Hiç durma.', kediSure:2300, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,0,1,0,1,0,0,0],
+    [1,1,0,1,0,1,0,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,0,1,0,1,0,1,1],
+    [0,0,0,1,0,1,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Zaman Tuzağı', tip:'Çukurlara basma, ama oyalanma da!', sure:35, grid:[
+    [2,0,5,0,0,0,5,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [5,1,1,1,0,1,1,1,5],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,5,0,0,0,5,0,3],
+  ]},
+  {name:'Kedili Depo', tip:'Kutuyu yeşil alana it, kedi de peşinde!', kediSure:3600, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,11,0,0,0,12,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Saniyeler', tip:'Kısa yol ama çok az zaman. Koş!', sure:35, grid:[
+    [2,0,0,0,0,0,0],
+    [1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1],
+    [0,0,0,0,0,0,3],
+  ]},
+  {name:'Kedi Peşinde Yıldız', tip:'Yıldızlar güzel ama kedi çok yakın!', kediSure:3200, grid:[
+    [2,0,0,0,8,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [8,1,1,1,4,1,1,1,8],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,8,0,0,0,3],
+  ]},
+  {name:'Buz Kaçışı', tip:'Buzdan kay, portaldan kaç, kediyi ek!', kediSure:3000, grid:[
+    [2,6,6,6,0,0,0,0,7],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,4,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,6,6,6,6,6,6,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [7,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Zamana Karşı Labirent', tip:'Büyük labirent, kısa zaman. Yolunu iyi seç!', sure:75, grid:[
+    [2,0,0,0,1,0,0,0,0,0,0],
+    [1,1,1,0,1,0,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,1,0],
+    [0,1,1,1,1,1,1,1,0,1,0],
+    [0,0,0,0,0,0,0,1,0,0,0],
+    [1,1,1,1,1,0,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Kedi ve Kapı', tip:'Anahtarı al, kapıyı aç — kedi beklemez!', kediSure:3400, grid:[
+    [2,0,0,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,10,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Son Sprint', tip:'Düz koridor, çukurlar ve saniyeler!', sure:65, grid:[
+    [2,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,5,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,5,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,5,0,0],
+    [0,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Amansız Takip', tip:'Kedi hiç durmuyor. Sen de durma!', kediSure:2400, grid:[
+    [2,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,0],
+    [0,1,0,0,0,0,0,0,1,0],
+    [0,1,0,1,1,1,1,0,1,0],
+    [0,1,0,1,4,0,1,0,1,0],
+    [0,1,0,1,1,1,1,0,1,0],
+    [0,1,0,0,0,0,0,0,1,0],
+    [0,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Zaman ve Kedi', tip:'Hem saat işliyor hem kedi kovalıyor!', sure:50, kediSure:3000, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,0,1,1,1,0,1,1],
+    [0,0,0,0,4,0,0,0,0],
+    [1,1,0,1,1,1,0,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Büyük Kovalamaca', tip:'Son bölüm! Yıldız, anahtar, kedi ve saat — hepsi bir arada 💪', sure:75, kediSure:2800, grid:[
+    [2,0,0,0,8,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,10,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,4,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0,0,0,0,3],
+  ]},
 ];
 
-const stickerList = ['🌈','🍭','🎠','🦄','🚀','🐳','🎡','🍩','🎈','🏅','💎','👑','🦋','🌟','🍓','🐬','🌻','🎯','🛸','🐢','🍉','🎺','🧸','🪁','🍦','🐙','🌙','⚽','🎨','🦜','🍒','🛼','🤖','🎪','🐞','🍀','🎁','🦖','🌺','🏆'];
+const stickerList = ['🌈','🍭','🎠','🦄','🚀','🐳','🎡','🍩','🎈','🏅','💎','👑','🦋','🌟','🍓','🐬','🌻','🎯','🛸','🐢','🍉','🎺','🧸','🪁','🍦','🐙','🌙','⚽','🎨','🦜','🍒','🛼','🤖','🎪','🐞','🍀','🎁','🦖','🌺','🏆',
+  '⏰','🐆','🎳','🍕','🪀','🦩','🧩','🚁','🍿','🐧','🎸','🦚','🛵','🍄','🐠','🎤','🧁','🦔','🚂','👟'];
 
 /* ==========================================================
    6) ZORLUK
    ========================================================== */
 let difficulty = 'easy';
 const diffConfig = {
-  easy:   { showHint:true,  moveLimit:null, catDelay:2, hearts:Infinity },
-  normal: { showHint:false, moveLimit:null, catDelay:1, hearts:3 },
-  hard:   { showHint:false, moveLimit:2.6,  catDelay:1, hearts:3 },
+  // kediCarpan: bolumun kendi kedi araligi bununla carpilir (buyuk = yavas kedi)
+  // sureCarpan: bolumun kendi suresi bununla carpilir (buyuk = bol zaman)
+  easy:   { showHint:true,  moveLimit:null, catDelay:2, hearts:Infinity, kediCarpan:1.5, sureCarpan:1.4 },
+  normal: { showHint:false, moveLimit:null, catDelay:1, hearts:3,        kediCarpan:1.0, sureCarpan:1.0 },
+  hard:   { showHint:false, moveLimit:2.6,  catDelay:1, hearts:3,        kediCarpan:0.8, sureCarpan:0.85 },
 };
 function setDifficulty(d){
   difficulty = d;
@@ -1457,6 +1665,12 @@ let boxes = [], targets = [], portals = [], stars = [];
 let hasKey = false, collectedStars = 0, score = 0, moves = 0, totalMoves = 0;
 let won = false, gameFailed = false, gameFinished = false;
 let optimalMoves = 0, moveLimit = null, hintCells = [], hintTimer = null;
+/* Zamana karsi bolumler ve kendi basina yuruyen kedi icin saat.
+   Tek bir tikleme dongusu var; duraklatma zaman damgalarini ileri
+   atarak yapiliyor, boylece ayarlar acikken sure islemiyor. */
+let kalanSure = null;      // saniye (null = bu bolumde sayac yok)
+let kediAralik = null;     // ms (null = kedi yalnizca biz hareket edince oynar)
+let saatSon = 0, kediSon = 0, oyunSaati = null;
 let hearts = 3;
 let earnedStickers = [];
 let completed = new Set();
@@ -1495,6 +1709,47 @@ function bfsPath(sr, sc, tr, tc, blockFn){
   return path;
 }
 
+/* Ipucu izi ve "kac adimda biterdi" hesabi.
+   Eskiden yalnizca duvarlara bakiyordu: kolay modda pati izi cocugu
+   tuzagin uzerinden ve kilitli kapidan geciriyordu. Artik tuzaktan
+   kaciniyor ve tek anahtarli bolumlerde once anahtara ugruyor. */
+function guvenliYol(){
+  const engel = (kapiAcik) => (r, c) => {
+    const v = grid[r][c];
+    if (v === WALL) return true;
+    if (v === TRAP) return true;
+    if (v === DOOR && !kapiAcik) return true;
+    return false;
+  };
+
+  const anahtarlar = [];
+  for (let r = 0; r < grid.length; r++){
+    for (let c = 0; c < grid[r].length; c++){
+      if (grid[r][c] === KEY) anahtarlar.push([r, c]);
+    }
+  }
+
+  // Bir anahtar butun kapilari aciyor: en kisa "once anahtar, sonra peynir"
+  // yolunu bulmak icin her anahtari deniyoruz.
+  if (anahtarlar.length && !hasKey){
+    let enIyi = null;
+    for (const [kr, kc] of anahtarlar){
+      const a = bfsPath(mouse.r, mouse.c, kr, kc, engel(false));
+      if (!a.length) continue;
+      const b = bfsPath(kr, kc, cheese.r, cheese.c, engel(true));
+      if (!b.length) continue;
+      const tum = a.concat(b);
+      if (!enIyi || tum.length < enIyi.length) enIyi = tum;
+    }
+    if (enIyi) return enIyi;
+  }
+
+  const g = bfsPath(mouse.r, mouse.c, cheese.r, cheese.c, engel(hasKey));
+  if (g.length) return g;
+  // Guvenli yol yoksa (eski bolumlerde olabilir) eski davranisa don
+  return bfsPath(mouse.r, mouse.c, cheese.r, cheese.c, (r, c) => grid[r][c] === WALL);
+}
+
 /* ==========================================================
    8) SEVİYE YÜKLEME
    ========================================================== */
@@ -1519,12 +1774,19 @@ function loadLevel(idx, announce = true){
     }
   }
 
-  const path = bfsPath(mouse.r, mouse.c, cheese.r, cheese.c, (r,c) => grid[r][c] === WALL);
+  const path = guvenliYol();
   optimalMoves = path.length;
   hintCells = diffConfig[difficulty].showHint ? path : [];
 
   const mult = diffConfig[difficulty].moveLimit;
   moveLimit = mult ? Math.max(24, Math.ceil(optimalMoves * mult)) : null;
+
+  // Zamana karsi bolumler ve kendi basina yuruyen kedi
+  const zor = diffConfig[difficulty];
+  kalanSure  = lvl.sure      ? Math.round(lvl.sure * zor.sureCarpan)      : null;
+  kediAralik = (lvl.kediSure && cat) ? Math.round(lvl.kediSure * zor.kediCarpan) : null;
+  document.getElementById('sureBox').style.display = (kalanSure !== null) ? 'flex' : 'none';
+  saatBaslat();
 
   document.getElementById('levelNum').textContent = idx + 1;
   document.getElementById('levelName').textContent = lvl.name;
@@ -1544,6 +1806,12 @@ function updateHUD(){
   document.getElementById('totalStars').textContent = stars.length;
   document.getElementById('score').textContent = score;
   document.getElementById('hearts').textContent = (hearts === Infinity ? '∞' : hearts);
+  const sy = document.getElementById('sayac');
+  if (kalanSure !== null){
+    sy.textContent = kalanSure;
+    sy.classList.toggle('warn', kalanSure <= 10);
+  }
+
   const lim = document.getElementById('limit');
   if (moveLimit !== null){
     const rem = Math.max(0, moveLimit - moves);
@@ -1854,6 +2122,7 @@ function performEntry(nr, nc, dr, dc){
 
 function loseHeart(title, text, emoji){
   gameFailed = true;
+  saatDurdur();
   if (hearts !== Infinity) hearts--;
   updateHUD();
   let msg = text;
@@ -1866,6 +2135,7 @@ function loseHeart(title, text, emoji){
 
 function finalizeMove(){
   if (won){
+    saatDurdur();
     sfxWin();
     say('win');
     confettiBurst(55);
@@ -1876,7 +2146,8 @@ function finalizeMove(){
     if (perfectMoves && allStars) rating = 3;
     else if (perfectMoves || allStars) rating = 2;
 
-    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0);
+    const sureBonus = (kalanSure !== null) ? kalanSure * 2 : 0;
+    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0) + sureBonus;
     score += 50 + bonus;
     completed.add(currentLevel);
 
@@ -1917,33 +2188,91 @@ function finalizeMove(){
 /* ==========================================================
    11) KEDİ
    ========================================================== */
-function moveCat(){
-  if (!cat) return;
+/* ---------- SAAT: sayac + kendi basina yuruyen kedi ---------- */
+function oyunDuraklatildi(){
+  if (won || gameFailed) return true;
+  if (document.hidden) return true;
+  if (document.getElementById('overlay').classList.contains('show')) return true;
+  return ayarlarAcik() || kurulumAcik();
+}
 
-  if (cat.r === mouse.r && cat.c === mouse.c){
-    sfxCat(); say('cat');
-    loseHeart('🐱 Kediye çarptın!', 'Kediden uzak durmalısın, o çok hızlı!', '🐱');
-    return;
+function saatBaslat(){
+  saatDurdur();
+  if (kalanSure === null && kediAralik === null) return;
+  saatSon = kediSon = Date.now();
+  oyunSaati = setInterval(saatTik, 200);
+}
+function saatDurdur(){
+  if (oyunSaati){ clearInterval(oyunSaati); oyunSaati = null; }
+}
+
+function saatTik(){
+  const simdi = Date.now();
+  // Duraklatmada zaman AKMASIN: damgalari ileri tasiyoruz
+  if (oyunDuraklatildi()){ saatSon = kediSon = simdi; return; }
+
+  if (kalanSure !== null && simdi - saatSon >= 1000){
+    const gecen = Math.floor((simdi - saatSon) / 1000);
+    saatSon += gecen * 1000;
+    kalanSure = Math.max(0, kalanSure - gecen);
+    updateHUD();
+    if (kalanSure > 0 && kalanSure <= 5) sfxTik();
+    if (kalanSure === 10) say('acele', 1.0);
+    if (kalanSure === 0){
+      saatDurdur();
+      say('fail');
+      loseHeart('⏰ Süre doldu!', 'Bu bölümü zamana karşı bitirmeliydik. Hadi bir daha deneyelim!', '⏰');
+      return;
+    }
   }
 
-  const delay = diffConfig[difficulty].catDelay;
-  if (moves % Math.max(1, delay) !== 0) return;
+  if (cat && kediAralik !== null && simdi - kediSon >= kediAralik){
+    kediSon = simdi;
+    kediZamanlaYurusun();
+  }
+}
 
+/* ---------- KEDI ---------- */
+function kediYakaladiMi(baslik, metin){
+  if (!cat) return false;
+  if (cat.r !== mouse.r || cat.c !== mouse.c) return false;
+  sfxCat(); say('cat');
+  loseHeart(baslik, metin, '🐱');
+  return true;
+}
+
+function kediAdimAt(){
   const path = bfsPath(cat.r, cat.c, mouse.r, mouse.c,
     (r,c) => grid[r][c] === WALL || grid[r][c] === DOOR || boxAt(r,c) >= 0);
-  if (!path.length) return;
-
+  if (!path.length) return false;
   const [nr, nc] = path[0];
   cat.r = nr; cat.c = nc;
+  return true;
+}
 
-  if (cat.r === mouse.r && cat.c === mouse.c){
-    sfxCat(); say('cat');
-    loseHeart('🐱 Kedi seni yakaladı!', 'Bir dahakine daha hızlı koşalım!', '🐱');
-    return;
-  }
-
+function kediSonrasi(){
+  if (kediYakaladiMi('🐱 Kedi seni yakaladı!', 'Bir dahakine daha hızlı koşalım!')) return;
   const dist = Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c);
   if (dist <= 2) say('near', 0.45);
+}
+
+// Oyuncu hamle ettiginde
+function moveCat(){
+  if (!cat) return;
+  if (kediYakaladiMi('🐱 Kediye çarptın!', 'Kediden uzak durmalısın, o çok hızlı!')) return;
+  const delay = diffConfig[difficulty].catDelay;
+  if (moves % Math.max(1, delay) !== 0) return;
+  if (kediAdimAt()) kediSonrasi();
+}
+
+// Sayacla: oyuncu dursa bile kedi yuruyor
+function kediZamanlaYurusun(){
+  if (!cat || oyunDuraklatildi()) return;
+  if (kediAdimAt()){
+    sfxKediAdim();
+    kediSonrasi();
+    render();          // oyuncu hamle etmedi, tahtayi kendimiz tazeliyoruz
+  }
 }
 
 /* ==========================================================
@@ -2221,6 +2550,7 @@ document.addEventListener('visibilitychange', () => {
     if (!muted) playMusic();
     keepAwake();
     relayout();
+    saatSon = kediSon = Date.now();   // arka planda gecen sure sayilmasin
   }
 });
 window.addEventListener('pagehide', saveProgress);
