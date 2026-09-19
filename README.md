@@ -6,18 +6,25 @@ uçak modunda bile çalışır.
 
 ## 🐭 Fare ve Peynir
 
-60 bölümlük labirent oyunu. Fareyi peynire götür: yıldızları topla, kediden kaç,
-tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it.
-
-Son 20 bölüm (41–60) iki yeni kural getiriyor:
+66 bölümlük labirent oyunu. Fareyi peynire götür: yıldızları topla, kediden kaç,
+tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it, anahtarla kapı aç.
 
 - **⏰ Zamana karşı** — geri sayan bir saat. Süre biterse bir can gider, bölüm
   baştan başlar. Erken bitirirsen kalan her saniye puana yazılır.
 - **🐱 Kendi yürüyen kedi** — bu kedi sadece sen hareket edince değil, kendi
   başına da ilerliyor (bölüme göre 2,3–3,6 saniyede bir adım). Durursan yaklaşır.
+- **🔑 Kaç anahtar, o kadar kapı** — anahtarlar cepte birikir; iki anahtar
+  topladıysan iki kapı açarsın. Cepteki anahtar sayısı üst şeritte görünür.
+- **🎁 Bonus bölümler** — her 10 bölümde bir (11, 22, 33, 44, 55, 66). Kedi yok,
+  saat yok, bol yıldız var ve puan iki katına çıkar.
 
-İkisi de zorluğa göre ölçekleniyor: Kolay'da kedi yavaş ve süre bol (×1,4),
-Zor'da kedi hızlı ve süre kısa (×0,85). Son bölümlerde ikisi bir arada.
+Saat ve kedi zorluğa göre ölçekleniyor: Kolay'da kedi yavaş ve süre bol (×1,4),
+Zor'da kedi hızlı ve süre kısa (×0,85).
+
+Bölümlerin tamamı, oyunun kendi kurallarını birebir taklit eden bir çözücüyle
+doğrulandı: kedi kovalarken kaçışın var mı, kutu itilebiliyor mu, anahtar kapıya
+yetiyor mu, tuzaksız bir yol kalıyor mu, verilen süre yavaş oynayan bir çocuğa
+yetiyor mu.
 
 **▶️ Oyna:** https://olgunak.github.io/cocuk-oyunlari/fare-ve-peynir/
 
