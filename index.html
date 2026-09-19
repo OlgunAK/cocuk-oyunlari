@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffb27d">
+<title>🎮 Çocuk Oyunları</title>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Comic Sans MS','Chalkboard SE','Segoe UI Rounded','Trebuchet MS',sans-serif;
+    background:
+      radial-gradient(circle at 15% 15%, #ffe9a8 0%, transparent 45%),
+      radial-gradient(circle at 85% 20%, #ffd6e7 0%, transparent 45%),
+      linear-gradient(160deg,#ffd98e 0%,#ffb27d 45%,#ff9db0 100%);
+    background-attachment:fixed;
+    min-height:100vh; min-height:100dvh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1{
+    color:#fff; font-size:clamp(26px,6vw,44px); text-align:center; letter-spacing:1px;
+    text-shadow:0 3px 0 #d2691e, 0 6px 12px rgba(0,0,0,.25);
+  }
+  .alt{ color:#7a4a1d; font-weight:700; font-size:15px; margin:8px 0 26px; text-align:center; }
+  .oyunlar{ display:flex; flex-wrap:wrap; gap:18px; justify-content:center; width:100%; max-width:760px; }
+  a.kart{
+    display:block; text-decoration:none; width:100%; max-width:360px;
+    background:rgba(255,255,255,.86); border-radius:24px; padding:26px 24px;
+    box-shadow:0 8px 0 rgba(180,120,60,.28), 0 14px 30px rgba(0,0,0,.14);
+    transition:transform .12s, box-shadow .12s; text-align:center;
+  }
+  a.kart:active{ transform:translateY(5px); box-shadow:0 3px 0 rgba(180,120,60,.28); }
+  @media (hover:hover){ a.kart:hover{ transform:translateY(-3px); box-shadow:0 11px 0 rgba(180,120,60,.28), 0 18px 34px rgba(0,0,0,.16); } }
+  .simge{ font-size:64px; line-height:1; display:block; margin-bottom:10px; }
+  .ad{ color:#5a3921; font-size:23px; font-weight:800; }
+  .aciklama{ color:#7a4a1d; font-size:14px; font-weight:700; margin-top:8px; line-height:1.5; }
+  .oyna{
+    display:inline-block; margin-top:16px; background:#5a3921; color:#fff6e5;
+    padding:12px 26px; border-radius:15px; font-weight:800; font-size:16px;
+    box-shadow:0 4px 0 #3d2817;
+  }
+  footer{ margin-top:30px; color:#7a4a1d; font-size:12.5px; font-weight:700; text-align:center; line-height:1.7; }
+</style>
+</head>
+<body>
+  <h1>🎮 Çocuk Oyunları</h1>
+  <div class="alt">Kurulum yok, reklam yok — tablette ve bilgisayarda çalışır</div>
+
+  <div class="oyunlar">
+    <a class="kart" href="fare-ve-peynir/">
+      <span class="simge">🐭🧀</span>
+      <div class="ad">Fare ve Peynir</div>
+      <div class="aciklama">40 bölümlük labirent. Yıldızları topla, kediden kaç, peyniri bul!</div>
+      <span class="oyna">Oyna ▶️</span>
+    </a>
+  </div>
+
+  <footer>
+    💡 Tablette daha iyi: tarayıcı menüsünden <b>Ana Ekrana Ekle</b> dersen<br>
+    oyun tam ekran, kendi simgesiyle açılır.
+  </footer>
+</body>
+</html>
