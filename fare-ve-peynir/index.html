@@ -255,6 +255,15 @@
   .lvl-btn.done{ background:#b8ea9d; box-shadow:0 3px 0 #7fbb63; }
   .lvl-btn.bonus{ background:#ffe08a; box-shadow:0 3px 0 #d9a441; }
   .lvl-btn.bonus.done{ background:#ffd24d; box-shadow:0 3px 0 #c9901f; }
+  .lvl-btn.boss{ background:#ffc2cf; box-shadow:0 3px 0 #d9738a; }
+  .lvl-btn.boss.done{ background:#ff9fb4; box-shadow:0 3px 0 #c25570; }
+  /* Boss: Kocaman Kedi */
+  .boss .glyph{ font-size:118%; }
+  .boss .taç{ position:absolute; top:-18%; left:50%; transform:translateX(-50%); font-size:52%; z-index:6; pointer-events:none; }
+  .boss.sersem{ animation:bossSersem .9s linear infinite; background:#e8d8ff !important; }
+  .boss.uyku{ animation:none; background:#d9e4ff !important; }
+  @keyframes bossSersem{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .yumak{ animation:bounce 1.3s infinite; }
   .lvl-btn.active{ background:var(--gold); color:#fff; box-shadow:0 3px 0 #b87b00; }
 
   /* ---------- çıkartmalar ---------- */
@@ -429,6 +438,7 @@
     <span class="box" id="limitBox" style="display:none">⏳ <b id="limit">0</b></span>
     <span class="box" id="sureBox" style="display:none">⏰ <b id="sayac">0</b></span>
     <span class="box" id="anahtarBox" style="display:none">🔑 <b id="anahtarSayi">0</b></span>
+    <span class="box" id="bossBox" style="display:none">👑 <b id="bossCan"></b></span>
     <button id="extrasBtn" class="ayar-btn" onclick="toggleExtras()" aria-label="Ayarlar">⚙️</button>
   </div>
 
@@ -453,7 +463,7 @@
 <div class="overlay" id="extras">
   <div class="kutu">
     <h1>🐭 Fare ve Peynir 🧀</h1>
-    <div class="subtitle">60 bölüm + 6 bonus! Peyniri bul, yıldızları topla, kediden kaç, saate yetiş!</div>
+    <div class="subtitle">60 bölüm + 6 boss + 6 bonus! Peyniri bul, yıldızları topla, kediden kaç, saate yetiş!</div>
 
     <button class="kur-btn" id="kurBtn" onclick="showInstall()">📲 Ana Ekrana Ekle — tam ekran oyna</button>
     <div class="kur-tamam" id="kurTamam" hidden>✅ Oyun ana ekranında — tam ekran oynuyorsun!</div>
@@ -1036,13 +1046,18 @@ function bubbleText(text, alsoSpeak = true){
 /* ==========================================================
    5) HÜCRE TİPLERİ VE SEVİYELER
    ========================================================== */
-const EMPTY=0, WALL=1, MOUSE=2, CHEESE=3, CAT=4, TRAP=5, ICE=6, PORTAL=7, STAR=8, KEY=9, DOOR=10, BOX=11, TARGET=12;
+const EMPTY=0, WALL=1, MOUSE=2, CHEESE=3, CAT=4, TRAP=5, ICE=6, PORTAL=7, STAR=8, KEY=9, DOOR=10, BOX=11, TARGET=12, YARN=13;
 
 const levels = [
   /* ====== 1-10: OGRETICI BOLUMLER ======
      Oyundaki her oge (yildiz, buz, portal, anahtar, cukur, kutu, kedi) burada
      ilk kez ve tek basina gosteriliyor. ogretici:{...} -> bolum ilk acildiginda
-     oyun baslamadan once bir kere anlatan kart. ====== */
+     oyun baslamadan once bir kere anlatan kart.
+     Her 10 bolumden sonra bir BOSS (11, 23, 35, 47, 59, 71), hemen ardindan
+     BONUS (12, 24, ..., 72) geliyor.
+     boss:{can, sersem} -> CAT hucresi Kocaman Kedi olur; her yun yumagi (13)
+     bir can goturur ve onu 'sersem' sira boyunca durdurur. Cani bitince
+     uyur, peynirin kilidi acilir. ====== */
   {name:'İlk Adım', tip:'Sağa doğru yürü ve peyniri ye!', ogretici:{baslik:'Merhaba! 🧀', metin:'👆 Parmağını labirentin üstünde kaydır ya da ok tuşlarına bas. Fareyi peynire götür!', emoji:'🐭'}, grid:[
     [0,0,0,0,0],
     [2,0,8,0,3],
@@ -1116,6 +1131,17 @@ const levels = [
     [0,1,1,1,1,1,0],
     [0,0,0,0,0,0,3],
   ]},
+  /* ---- BOSS ---- */
+  {name:'Kocaman Kedi', tip:'Yumakları topla, Kocaman Kedi\'yi uyut, sonra peynire koş!', boss:{can:2, sersem:4}, enAz:24, ogretici:{baslik:'Boss: Kocaman Kedi', metin:'Kocaman Kedi peynirin başında bekliyor ve seni kovalıyor. Her 🧶 yün yumağını aldığında onunla oynamaya dalar: bir canı gider ve başı döner, birkaç adım yürüyemez, seni yakalayamaz. Canları bitince uyur ve peynirin kilidi açılır!', emoji:'😾'}, grid:[
+    [2,0,0,0,0,0,13],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,0,0,4,0,0,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [13,0,0,0,0,0,0],
+    [1,1,1,3,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Peynir Bahçesi', tip:'Bonus bölüm! Tehlike yok — bütün yıldızları topla, puanın ikiye katlansın.', bonus:true, grid:[
     [2,8,0,0,8,0,0],
@@ -1126,7 +1152,7 @@ const levels = [
     [0,0,0,0,0,0,3],
   ]},
 
-  /* ====== 12-25: PRATIK (saat ve kendi yuruyen kedi YOK) ====== */
+  /* ====== 13-25: PRATIK (saat ve kendi yuruyen kedi YOK) ====== */
   {name:'Buz Gölü', tip:'Buzda kayarken yıldızlar seni durdurur!', grid:[
     [0,0,0,8,0,0,0,0],
     [0,6,6,6,6,6,6,0],
@@ -1228,6 +1254,19 @@ const levels = [
     [1,1,1,10,1,1,1],
     [0,0,0,0,0,0,3],
   ]},
+  /* ---- BOSS ---- */
+  {name:'Kedi Kalesi', tip:'Kale çukurlarla çevrili. İki yumak, bir Kocaman Kedi!', boss:{can:2, sersem:3}, enAz:31, grid:[
+    [2,0,0,0,0,0,0,0,13],
+    [0,1,1,1,0,1,1,1,0],
+    [0,1,8,0,0,0,8,1,0],
+    [0,1,0,1,5,1,0,1,0],
+    [0,0,0,5,4,5,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,1,8,0,0,0,8,1,0],
+    [0,1,1,1,0,1,1,1,0],
+    [13,0,0,0,0,0,0,0,0],
+    [1,1,1,1,3,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Yıldız Yağmuru', tip:'Bonus bölüm! Yıldız yağıyor, hepsini topla!', bonus:true, grid:[
     [2,0,8,0,8,0,8,0,0],
@@ -1247,6 +1286,26 @@ const levels = [
     [0,0,0,0,0,0,0,0,0],
     [3,1,1,1,1,1,1,1,1],
   ]},
+  /* ====== 26: SAAT + KENDI YURUYEN KEDI OGRETICISI ======
+     sure:<saniye>    -> geri sayan saat; sifirlanirsa bir can gider
+     kediSure:<ms>    -> kedi biz hareket etmesek de bu araliklarla bir adim atar
+     Ikisi de zorluga gore olcekleniyor (bkz. diffConfig). Ikisi de ilk kez
+     burada cikiyor, ondan once hicbir bolumde yok. ====== */
+  {name:'Tik Tak Kedi', tip:'Saat işliyor, kedi de kendi kendine yürüyor. Durmadan peynire git!', sure:80, kediSure:4500, ogretici:{baslik:'Yeni: Saat ve Kedi', metin:'⏰ Üstteki saat geri sayıyor: {sure} saniye içinde peynire ulaş. Erken bitirirsen kalan saniyeler puan olur. 🐱 Bu kedi sen dursan bile yürüyor: her {kedi} saniyede bir adım atar. Durma, yürümeye devam et!', emoji:'⏰'}, grid:[
+    [4,0,0,0,0,0,0,0,2],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,8,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,8,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  /* ====== 27-70: KOLAYDAN ZORA ======
+     Siralama bir cozucunun olcumlerine gore: en kisa yol, mekanik sayisi,
+     kutu bulmacalarinda cikmaza dusuren hamle orani, kedi/cukur olum orani,
+     saatli bolumlerde cocugun ne kadar hizli oynamasi gerektigi.
+     enAz:<n> -> cozucunun buldugu en az adim (kutulu / kediden dolanilan
+     / boss bolumlerinde pati izinin kisa yolu gercekte yurunemiyor). ====== */
   {name:'Gizli Geçit', tip:'Portalın ardında kilitli bir kapı var!', grid:[
     [2,0,0,1,0,0,0,10,3],
     [0,1,0,1,0,1,1,1,1],
@@ -1267,26 +1326,6 @@ const levels = [
     [0,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,8,0,0,3],
   ]},
-  /* ====== 26: SAAT + KENDI YURUYEN KEDI OGRETICISI ======
-     sure:<saniye>    -> geri sayan saat; sifirlanirsa bir can gider
-     kediSure:<ms>    -> kedi biz hareket etmesek de bu araliklarla bir adim atar
-     Ikisi de zorluga gore olcekleniyor (bkz. diffConfig). Ikisi de ilk kez
-     burada cikiyor, ondan once hicbir bolumde yok. ====== */
-  {name:'Tik Tak Kedi', tip:'Saat işliyor, kedi de kendi kendine yürüyor. Durmadan peynire git!', sure:80, kediSure:4500, ogretici:{baslik:'Yeni: Saat ve Kedi', metin:'⏰ Üstteki saat geri sayıyor: {sure} saniye içinde peynire ulaş. Erken bitirirsen kalan saniyeler puan olur. 🐱 Bu kedi sen dursan bile yürüyor: her {kedi} saniyede bir adım atar. Durma, yürümeye devam et!', emoji:'⏰'}, grid:[
-    [4,0,0,0,0,0,0,0,2],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,8,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,8,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,3],
-  ]},
-  /* ====== 27-65: KOLAYDAN ZORA ======
-     Siralama bir cozucunun olcumlerine gore: en kisa yol, mekanik sayisi,
-     kutu bulmacalarinda cikmaza dusuren hamle orani, kedi/cukur olum orani,
-     saatli bolumlerde cocugun ne kadar hizli oynamasi gerektigi.
-     enAz:<n> -> cozucunun buldugu en az adim (kutulu / kediden dolanilan
-     bolumlerde pati izinin kisa yolu gercekte yurunemiyor). ====== */
   {name:'Tuzak Tarlası', tip:'Çukurların arasından dikkatlice geç!', grid:[
     [2,0,0,0,0,0,0,0,0],
     [0,5,0,5,0,5,0,5,0],
@@ -1348,6 +1387,17 @@ const levels = [
     [0,0,0,0,0,0,0,0,0],
     [0,1,0,1,5,1,0,1,0],
     [4,0,0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Uykusuz Kedi', tip:'Bu Kocaman Kedi sen dursan bile yürüyor. Üç yumak topla!', boss:{can:3, sersem:4}, kediSure:4000, enAz:31, grid:[
+    [2,0,0,0,1,0,0,0,13],
+    [0,1,1,0,1,0,1,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,0,0,1,4,1,0,0,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,1,0,1,0,1,1,0],
+    [13,0,0,0,0,0,0,0,13],
+    [1,1,1,1,3,1,1,1,1],
   ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Buz Kaydırağı', tip:'Bonus bölüm! Buzda kay, yıldızları topla, eğlen!', bonus:true, grid:[
@@ -1465,6 +1515,18 @@ const levels = [
     [0,0,0,0,0,0,0,0,0],
     [4,0,0,0,0,0,0,0,3],
   ]},
+  /* ---- BOSS ---- */
+  {name:'Buz Kalesi', tip:'Buzda kayarsın, Kocaman Kedi kaymaz. Üç yumak!', boss:{can:3, sersem:3}, kediSure:3500, enAz:35, grid:[
+    [2,0,0,0,0,0,0,0,0,0,13],
+    [0,1,6,6,6,6,6,6,6,1,0],
+    [0,1,0,0,0,5,0,0,0,1,0],
+    [0,6,0,1,1,0,1,1,0,6,0],
+    [0,6,0,1,0,4,0,1,0,6,0],
+    [0,6,0,0,0,0,0,0,0,6,0],
+    [0,1,0,1,1,5,1,1,0,1,0],
+    [13,0,0,0,0,0,0,0,0,0,13],
+    [1,1,1,1,1,3,1,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Portal Karnavalı', tip:'Bonus bölüm! Girdaplarla ışınlan, yıldızları kap!', bonus:true, grid:[
     [2,0,8,0,0,0,7,0,8],
@@ -1573,6 +1635,19 @@ const levels = [
     [0,1,1,1,0,1,1,1,0],
     [0,0,5,0,0,0,5,0,3],
   ]},
+  /* ---- BOSS ---- */
+  {name:'Kedi Sarayı', tip:'Saat işliyor, Kocaman Kedi kovalıyor. Üç yumak, hızlı ol!', boss:{can:3, sersem:3}, sure:110, kediSure:3300, enAz:46, grid:[
+    [2,0,0,0,0,1,0,0,0,0,13],
+    [0,1,1,1,0,1,0,1,1,1,0],
+    [0,1,13,0,0,0,0,0,0,1,0],
+    [0,1,1,1,5,1,5,1,1,1,0],
+    [0,0,0,0,0,4,0,0,0,0,0],
+    [0,1,1,1,5,1,5,1,1,1,0],
+    [0,1,0,0,0,0,0,0,0,1,0],
+    [0,1,0,1,1,0,1,1,0,1,0],
+    [13,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,3,1,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Tatil Köyü', tip:'Bonus bölüm! Ne kedi var ne saat — keyfine bak.', bonus:true, grid:[
     [2,0,0,8,0,0,8,0,0,0],
@@ -1679,7 +1754,7 @@ const levels = [
     [0,1,1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Şampiyonun Sınavı', tip:'Son bölüm! Bütün hünerlerini göster 🏆', grid:[
+  {name:'Şampiyonun Sınavı', tip:'Bütün hünerlerini göster! Sırada Kedi Kral var 👑', grid:[
     [2,0,0,0,0,0,0,0,0,0,9],
     [0,1,1,1,1,1,1,1,1,1,0],
     [0,0,8,0,0,0,0,0,8,0,0],
@@ -1691,6 +1766,19 @@ const levels = [
     [4,0,0,0,0,0,0,0,0,0,0],
     [0,1,1,1,1,1,1,1,1,1,0],
     [8,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Kedi Kral', tip:'Son boss! Dört yumak, saat ve Kedi Kral 👑', boss:{can:4, sersem:3}, sure:110, kediSure:2800, enAz:50, grid:[
+    [2,0,0,0,0,0,0,0,0,0,13],
+    [0,1,1,1,1,0,1,1,1,1,0],
+    [0,1,8,0,0,0,0,0,8,1,0],
+    [0,1,0,1,5,1,5,1,0,1,0],
+    [0,0,0,1,0,4,0,1,0,0,0],
+    [0,1,0,1,1,0,1,1,0,1,0],
+    [0,1,13,0,0,0,0,0,13,1,0],
+    [0,1,1,1,1,0,1,1,1,1,0],
+    [13,0,0,5,0,0,0,5,0,0,0],
+    [1,1,1,1,1,3,1,1,1,1,1],
   ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Büyük Ödül', tip:'Son bonus! On yıldız, bir peynir ve koca bir tebrik 🏆', bonus:true, grid:[
@@ -1706,7 +1794,7 @@ const levels = [
 
 const stickerList = ['🌈','🍭','🎠','🦄','🚀','🐳','🎡','🍩','🎈','🏅','💎','👑','🦋','🌟','🍓','🐬','🌻','🎯','🛸','🐢','🍉','🎺','🧸','🪁','🍦','🐙','🌙','⚽','🎨','🦜','🍒','🛼','🤖','🎪','🐞','🍀','🎁','🦖','🌺','🏆',
   '⏰','🐆','🎳','🍕','🪀','🦩','🧩','🚁','🍿','🐧','🎸','🦚','🛵','🍄','🐠','🎤','🧁','🦔','🚂','👟',
-  '🎁','🎆','🏅','💎','👑','🌟'];
+  '🎁','🎆','🏅','💎','👑','🌟','🦁','🧶','🐯','🏰','🐉','🎖️'];
 
 /* ==========================================================
    6) ZORLUK
@@ -1749,6 +1837,10 @@ let optimalMoves = 0, moveLimit = null, hintCells = [], hintTimer = null;
 /* Zamana karsi bolumler ve kendi basina yuruyen kedi icin saat.
    Tek bir tikleme dongusu var; duraklatma zaman damgalarini ileri
    atarak yapiliyor, boylece ayarlar acikken sure islemiyor. */
+/* Boss (Kocaman Kedi): kedi gibi kovaliyor ama canli. Her yun yumagi (YARN)
+   bir can goturur ve onu birkac sira sersemletir (yurumez, yakalayamaz).
+   Cani bitince uyur; o zamana kadar peynir kilitli. */
+let boss = null;           // { can, max, sersem, sersemAdim } ya da null
 let kalanSure = null;      // saniye (null = bu bolumde sayac yok)
 let kediAralik = null;     // ms (null = kedi yalnizca biz hareket edince oynar)
 let saatSon = 0, kediSon = 0, oyunSaati = null;
@@ -1761,7 +1853,10 @@ function inBounds(r,c){ return r >= 0 && r < grid.length && c >= 0 && c < grid[0
 function boxAt(r,c){ return boxes.findIndex(b => b.r === r && b.c === c); }
 function isTarget(r,c){ return targets.some(t => t.r === r && t.c === c); }
 function allBoxesOnTargets(){ return targets.every(t => boxAt(t.r, t.c) >= 0); }
-function cheeseLocked(){ return targets.length > 0 && !allBoxesOnTargets(); }
+function bossUyanik(){ return !!boss && boss.can > 0; }
+function cheeseLocked(){ return (targets.length > 0 && !allBoxesOnTargets()) || bossUyanik(); }
+// Uyuyan ya da sersem boss kimseyi yakalayamaz
+function kediZararsiz(){ return !!boss && (boss.can <= 0 || boss.sersem > 0); }
 
 function bfsPath(sr, sc, tr, tc, blockFn){
   const rows = grid.length, cols = grid[0].length;
@@ -1795,6 +1890,26 @@ function bfsPath(sr, sc, tr, tc, blockFn){
    tuzagin uzerinden ve kilitli kapidan geciriyordu. Artik tuzaktan
    kaciniyor ve tek anahtarli bolumlerde once anahtara ugruyor. */
 function guvenliYol(){
+  // Boss bolumu: peynir yumaklar bitmeden acilmiyor. En yakin yumaktan
+  // en yakina, sonra peynire (boss bolumlerinde kapi/portal yok).
+  if (bossUyanik()){
+    const engel = (r, c) => grid[r][c] === WALL || grid[r][c] === TRAP;
+    const kalan = [];
+    grid.forEach((row, r) => row.forEach((v, c) => { if (v === YARN) kalan.push({r, c}); }));
+    let yer = { r: mouse.r, c: mouse.c };
+    const yol = [];
+    while (kalan.length){
+      let en = -1, enYol = null;
+      kalan.forEach((y, i) => {
+        const p = bfsPath(yer.r, yer.c, y.r, y.c, engel);
+        if (p.length && (!enYol || p.length < enYol.length)){ en = i; enYol = p; }
+      });
+      if (en < 0) break;
+      yol.push(...enYol); yer = kalan[en]; kalan.splice(en, 1);
+    }
+    return yol.concat(bfsPath(yer.r, yer.c, cheese.r, cheese.c, engel));
+  }
+
   // Durum = (konum, cepteki anahtar, hangi anahtarlar alindi, hangi kapilar acildi)
   // Her anahtar BIR kapi actigi icin duz BFS yetmiyor; durumu tasiyoruz.
   const rows = grid.length, cols = grid[0].length;
@@ -1877,6 +1992,7 @@ function loadLevel(idx, announce = true){
   const lvl = levels[idx];
   grid = lvl.grid.map(row => row.slice());
   cat = null; boxes = []; targets = []; portals = []; stars = [];
+  boss = lvl.boss ? { can: lvl.boss.can, max: lvl.boss.can, sersem: 0, sersemAdim: lvl.boss.sersem } : null;
   anahtar = 0; collectedStars = 0; moves = 0;
   won = false; gameFailed = false;
   if (hintTimer){ clearTimeout(hintTimer); hintTimer = null; }
@@ -1911,6 +2027,7 @@ function loadLevel(idx, announce = true){
   document.getElementById('sureBox').style.display = (kalanSure !== null) ? 'flex' : 'none';
   const anahtarVar = lvl.grid.some(row => row.indexOf(KEY) >= 0);
   document.getElementById('anahtarBox').style.display = anahtarVar ? 'flex' : 'none';
+  document.getElementById('bossBox').style.display = boss ? 'flex' : 'none';
   saatBaslat();
 
   document.getElementById('levelNum').textContent = idx + 1;
@@ -1953,6 +2070,11 @@ function updateHUD(){
   document.getElementById('hearts').textContent = (hearts === Infinity ? '∞' : hearts);
   const ab = document.getElementById('anahtarSayi');
   if (ab) ab.textContent = anahtar;
+  if (boss){
+    document.getElementById('bossCan').textContent = boss.can > 0
+      ? '❤️'.repeat(boss.can) + '🤍'.repeat(boss.max - boss.can) + (boss.sersem > 0 ? ' 💫' : '')
+      : '😴';
+  }
 
   const sy = document.getElementById('sayac');
   if (kalanSure !== null){
@@ -1973,9 +2095,9 @@ function buildLevelButtons(){
   wrap.innerHTML = '';
   levels.forEach((lvl, i) => {
     const b = document.createElement('button');
-    b.className = 'lvl-btn' + (levels[i].bonus ? ' bonus' : '') +
+    b.className = 'lvl-btn' + (levels[i].bonus ? ' bonus' : '') + (levels[i].boss ? ' boss' : '') +
                   (completed.has(i) ? ' done' : '') + (i === currentLevel ? ' active' : '');
-    b.textContent = levels[i].bonus ? '🎁' : (i + 1);
+    b.textContent = levels[i].bonus ? '🎁' : levels[i].boss ? '👑' : (i + 1);
     b.title = lvl.name;
     b.onclick = () => { currentLevel = i; loadLevel(i); };
     wrap.appendChild(b);
@@ -2066,6 +2188,15 @@ function render(){
 
         let glyph = '';
         if (isMouse)            { div.classList.add('mouse'); glyph = hero; }
+        else if (isCat && boss) {
+          div.classList.add('cat', 'boss');
+          if (boss.can <= 0)       { div.classList.add('uyku');   glyph = '😴'; }
+          else if (boss.sersem > 0){ div.classList.add('sersem'); glyph = '😵'; }
+          else glyph = '😾';
+          const tac = document.createElement('span');
+          tac.className = 'taç'; tac.textContent = '👑';
+          div.appendChild(tac);
+        }
         else if (isCat)         { div.classList.add('cat'); glyph = '🐱'; }
         else if (isCheese)      {
           div.classList.add('cheese'); glyph = '🧀';
@@ -2080,6 +2211,7 @@ function render(){
         else if (bi >= 0)       { div.classList.add('box'); if (isTarget(r,c)) div.classList.add('on-target'); glyph = '📦'; }
         else if (star)          { div.classList.add('star'); glyph = '⭐'; }
         else if (cell === KEY)  { div.classList.add('key'); glyph = '🔑'; }
+        else if (cell === YARN) { div.classList.add('yumak'); glyph = '🧶'; }
         else if (cell === DOOR) { glyph = anahtar > 0 ? '🔓' : '🚪'; }
         else if (cell === PORTAL){ glyph = '🌀'; }
         else if (cell === TRAP) { glyph = '🕳️'; }
@@ -2101,7 +2233,7 @@ function render(){
   }
 
   // Kedi yakınsa tahta kırmızı kırmızı yanıp sönsün
-  const near = cat && (Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c)) <= 2;
+  const near = cat && !kediZararsiz() && (Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c)) <= 2;
   board.classList.toggle('danger', !!near && !won && !gameFailed);
 
   // Yon tuslarinin ortasindaki kahraman
@@ -2163,7 +2295,9 @@ function tryMove(dr, dc){
   // Yap-boz bölümü: kutular yerleşmeden peynir kilitli
   if (nr === cheese.r && nc === cheese.c && cheeseLocked()){
     sfxWall(); shakeMouse();
-    bubbleText('Peynir kilitli! Önce bütün kutuları yeşil alanlara it! 📦');
+    bubbleText(bossUyanik()
+      ? 'Peynir kilitli! Önce Kocaman Kedi\'yi yün yumaklarıyla uyut! 🧶'
+      : 'Peynir kilitli! Önce bütün kutuları yeşil alanlara it! 📦');
     return;
   }
 
@@ -2235,6 +2369,24 @@ function performEntry(nr, nc, dr, dc){
     say('key', 1.0);
   }
 
+  // Yun yumagi: boss onunla oynamaya dalar -> bir can gider, basi doner
+  if (cell === YARN){
+    grid[nr][nc] = EMPTY;
+    pendingFloats.push({r:nr, c:nc, t:'🧶'});
+    if (bossUyanik()){
+      boss.can--;
+      if (boss.can > 0){
+        boss.sersem = boss.sersemAdim;
+        sfxKey();
+        bubbleText('Kocaman Kedi yumakla oynuyor, başı döndü! 💫 ' + boss.can + ' yumak daha!');
+      } else {
+        boss.sersem = 0;
+        sfxLevelUp();
+        bubbleText('Kocaman Kedi uyudu! 😴 Peynirin kilidi açıldı, koş! 🧀');
+      }
+    }
+  }
+
   // Tuzak
   if (cell === TRAP){
     sfxTrap();
@@ -2300,7 +2452,8 @@ function finalizeMove(){
 
     const sureBonus = (kalanSure !== null) ? kalanSure * 2 : 0;
     const bonusBolum = !!levels[currentLevel].bonus;
-    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0) + sureBonus;
+    const bossBolum = !!levels[currentLevel].boss;
+    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0) + sureBonus + (bossBolum ? 40 : 0);
     score += (50 + bonus) * (bonusBolum ? 2 : 1);
     completed.add(currentLevel);
 
@@ -2322,8 +2475,10 @@ function finalizeMove(){
       } else {
         const msgs = levels[currentLevel].bonus
           ? ['Bonus tamam!', 'Ekstra puan senin!', 'Bonus bitti!']
+          : bossBolum
+          ? ['Kocaman Kedi\'yi yendin!', 'Boss yenildi!', 'Kedi mışıl mışıl uyuyor!']
           : ['Süpersin!', 'Harikasın!', 'Çok iyiydi!', 'Bravo!', 'Muhteşem!'];
-        showModal(msgs[Math.floor(Math.random()*msgs.length)] + (levels[currentLevel].bonus ? ' 🎁' : ' 🎉'),
+        showModal(msgs[Math.floor(Math.random()*msgs.length)] + (levels[currentLevel].bonus ? ' 🎁' : bossBolum ? ' 👑' : ' 🎉'),
           'Seviye ' + (currentLevel + 1) + ' tamam! ' + moves + ' adımda bitirdin' + starInfo +
           '. Kazandığın çıkartma: ' + earnedStickers[currentLevel],
           false, false, earnedStickers[currentLevel] || '🎉', rating);
@@ -2389,7 +2544,7 @@ function saatTik(){
 
 /* ---------- KEDI ---------- */
 function kediYakaladiMi(baslik, metin){
-  if (!cat) return false;
+  if (!cat || kediZararsiz()) return false;
   if (cat.r !== mouse.r || cat.c !== mouse.c) return false;
   sfxCat(); say('cat');
   loseHeart(baslik, metin, '🐱');
@@ -2397,6 +2552,11 @@ function kediYakaladiMi(baslik, metin){
 }
 
 function kediAdimAt(){
+  // Boss uyuyorsa yurumez; sersemse bu sirasini kaybeder
+  if (boss){
+    if (boss.can <= 0) return false;
+    if (boss.sersem > 0){ boss.sersem--; updateHUD(); return false; }
+  }
   const path = bfsPath(cat.r, cat.c, mouse.r, mouse.c,
     (r,c) => grid[r][c] === WALL || grid[r][c] === DOOR || boxAt(r,c) >= 0);
   if (!path.length) return false;
@@ -2406,6 +2566,7 @@ function kediAdimAt(){
 }
 
 function kediSonrasi(){
+  if (boss && kediYakaladiMi('👑 Kocaman Kedi seni yakaladı!', 'Yün yumaklarını topla: her yumak onun başını döndürür!')) return;
   if (kediYakaladiMi('🐱 Kedi seni yakaladı!', 'Bir dahakine daha hızlı koşalım!')) return;
   const dist = Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c);
   if (dist <= 2) say('near', 0.45);
@@ -2431,7 +2592,7 @@ function kediZamanlaYurusun(){
     sfxKediAdim();
     kediSonrasi();
     render();          // oyuncu hamle etmedi, tahtayi kendimiz tazeliyoruz
-  }
+  } else if (boss) render();   // sersemlik azaldi: yuz ifadesi degissin
 }
 
 /* ==========================================================
@@ -2439,7 +2600,7 @@ function kediZamanlaYurusun(){
    ========================================================== */
 function showHintFlash(){
   if (won || gameFailed) return;
-  const path = bfsPath(mouse.r, mouse.c, cheese.r, cheese.c,
+  const path = bossUyanik() ? guvenliYol() : bfsPath(mouse.r, mouse.c, cheese.r, cheese.c,
     (r,c) => grid[r][c] === WALL || (grid[r][c] === DOOR && anahtar <= 0) || boxAt(r,c) >= 0);
   if (!path.length){
     bubbleText('Hmm, buradan peynire yol yok! 🔄 Baştan başlayalım mı?');
@@ -2613,13 +2774,18 @@ document.addEventListener('dblclick',    e => e.preventDefault());
 /* ==========================================================
    14) KAYIT (localStorage)
    ========================================================== */
-const KAYIT_SURUM = 3;
+const KAYIT_SURUM = 4;
 const BONUS_SONRASI = [10, 20, 30, 40, 50, 60];   // bu bolumlerden SONRA bonus eklendi
 /* Surum 3'te bolumler zorluga gore yeniden siralandi (ogreticiler 1-10'da,
    saat ve kendi yuruyen kedi 26'dan sonra). SURUM2_YENI[eski indeks] = yeni indeks. */
 const SURUM2_YENI = [0,1,2,3,4,5,9,7,17,20,10,57,36,39,8,6,35,14,11,26,12,21,22,19,41,13,24,33,
   46,30,37,23,32,27,34,58,16,15,31,56,18,38,64,43,25,42,29,48,28,44,49,50,60,53,54,63,45,51,40,55,
   52,61,47,59,62,65];
+/* Surum 4'te her 10 bolumden sonra bir boss eklendi (11, 23, ..., 71), bonuslar
+   bir kaydi (12, 24, ..., 72). SURUM3_YENI[eski indeks] = yeni indeks. */
+const SURUM3_YENI = [0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,23,24,26,27,25,28,29,30,31,
+  32,33,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,59,60,61,62,63,64,65,66,67,
+  68,69,71];
 
 // Eski (bonussuz) bolum indeksini yeni diziye tasir
 function eskiIndeksiTasi(i){
@@ -2663,6 +2829,17 @@ function loadProgress(){
     // Surum 2 -> 3: ayni bolumler yeni sirada; bitirilenler ve cikartmalar bolumle birlikte tasiniyor
     if ((d.s || 1) < 3){
       const tasi = i => SURUM2_YENI[i];
+      if (Array.isArray(d.completed)) d.completed = d.completed.map(tasi).filter(i => i !== undefined);
+      if (Array.isArray(d.stickers)){
+        const yeni = [];
+        d.stickers.forEach((c, i) => { if (c && tasi(i) !== undefined) yeni[tasi(i)] = c; });
+        d.stickers = yeni;
+      }
+      if (typeof d.level === 'number') d.level = tasi(d.level);
+    }
+    // Surum 3 -> 4: bosslar araya girdi
+    if ((d.s || 1) < 4){
+      const tasi = i => SURUM3_YENI[i];
       if (Array.isArray(d.completed)) d.completed = d.completed.map(tasi).filter(i => i !== undefined);
       if (Array.isArray(d.stickers)){
         const yeni = [];

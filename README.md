@@ -6,7 +6,7 @@ uçak modunda bile çalışır.
 
 ## 🐭 Fare ve Peynir
 
-66 bölümlük labirent oyunu (60 bölüm + 6 bonus). Fareyi peynire götür: yıldızları
+72 bölümlük labirent oyunu (60 bölüm + 6 boss + 6 bonus). Fareyi peynire götür: yıldızları
 topla, kediden kaç, tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it,
 anahtarla kapı aç.
 
@@ -16,12 +16,21 @@ anahtarla kapı aç.
   birden çok anahtar, çukur, kutu, kedi) burada ilk kez ve tek başına çıkıyor.
   Bölüm ilk açıldığında oyun başlamadan önce küçük bir kart o şeyi anlatıyor
   (sesli okunuyor). Bitirilen bölümde kart bir daha çıkmıyor.
-- **12–25: Pratik.** Öğrenilenler karışık, saat ve kendi yürüyen kedi yok.
+- **👑 Boss bölümleri: 11, 23, 35, 47, 59, 71.** Her 10 bölümden sonra bir boss,
+  hemen ardından bonus geliyor.
+- **13–25: Pratik.** Öğrenilenler karışık, saat ve kendi yürüyen kedi yok.
 - **26: Saat ve kendi yürüyen kedi.** İkisi de ilk kez burada çıkıyor, bir kereliğine
   öğretici olarak: süre bol, kedi yavaş ve geride başlıyor, kart saniyeleri
   seçili zorluğa göre söylüyor.
-- **27–65: Kolaydan zora.** Saatli bölümler diğerlerinin arasına zorluklarına göre
-  yerleşti. Sonuncusu (65) en zoru.
+- **27–70: Kolaydan zora.** Saatli bölümler diğerlerinin arasına zorluklarına göre
+  yerleşti. Oyun son boss Kedi Kral'la (71) ve büyük ödülle (72) bitiyor.
+
+- **👑 Boss: Kocaman Kedi** — peynirin başında bekliyor ve seni kovalıyor; peynir
+  o uyumadan açılmıyor. Haritadaki her 🧶 yün yumağını aldığında kedi yumakla
+  oynamaya dalıyor: bir canı gidiyor ve başı dönüyor 💫 (birkaç sıra yürüyemiyor,
+  seni yakalayamıyor). Canları bitince uyuyor 😴. Canı üst şeritte görünür.
+  İlk boss (11) kart ile anlatılıyor. Sonrakiler giderek zorlaşıyor: daha çok can,
+  daha kısa sersemlik, 26'dan sonrakilerde kendi kendine yürüme ve saat.
 
 - **⏰ Zamana karşı** — geri sayan bir saat. Süre biterse bir can gider, bölüm
   baştan başlar. Erken bitirirsen kalan her saniye puana yazılır.
@@ -29,7 +38,7 @@ anahtarla kapı aç.
   başına da ilerliyor (bölüme göre 2,3–4,5 saniyede bir adım). Durursan yaklaşır.
 - **🔑 Kaç anahtar, o kadar kapı** — anahtarlar cepte birikir; iki anahtar
   topladıysan iki kapı açarsın. Cepteki anahtar sayısı üst şeritte görünür.
-- **🎁 Bonus bölümler** — her 10 bölümde bir (11, 22, 33, 44, 55, 66). Kedi yok,
+- **🎁 Bonus bölümler** — her boss'tan sonra (12, 24, 36, 48, 60, 72). Kedi yok,
   saat yok, bol yıldız var ve puan iki katına çıkar.
 
 Saat ve kedi zorluğa göre ölçekleniyor: Kolay'da kedi yavaş ve süre bol (×1,4),
@@ -57,7 +66,7 @@ hızlı oynaması gerektiği.
   oynamaya devam edersin. Tercih hatırlanır.
 
 Oyun ekranında sadece labirent, oklar ve üstte küçük bir bilgi şeridi durur.
-Geri kalan her şey — yardım, baştan başlat, zorluk, kahraman, 66 bölümün
+Geri kalan her şey — yardım, baştan başlat, zorluk, kahraman, 72 bölümün
 listesi, çıkartmalar, müzik ve ses ayarları — sağ üstteki **⚙️** düğmesinin
 arkasında.
 - Klavye bağlıysa: yön tuşları / WASD, `H` yardım, `R` baştan, `M` müzik,
