@@ -2106,11 +2106,14 @@ function buildLevelButtons(){
 
 function renderStickers(){
   const wrap = document.getElementById('stickers');
-  if (!earnedStickers.length){
+  // Cikartmalar bolum numarasina gore duruyor; bitirilmemis bolumlerin yeri bos.
+  // Kayitta JSON bu bosluklari null yapiyor - ekranda "null" yazmasin.
+  const olanlar = earnedStickers.filter(Boolean);
+  if (!olanlar.length){
     wrap.innerHTML = '<span class="empty-note">Her seviyeyi bitirdiğinde bir çıkartma kazanırsın!</span>';
     return;
   }
-  wrap.innerHTML = earnedStickers.map(s => '<span class="got">' + s + '</span>').join('');
+  wrap.innerHTML = olanlar.map(s => '<span class="got">' + s + '</span>').join('');
 }
 
 /* ==========================================================
