@@ -6,13 +6,27 @@ uçak modunda bile çalışır.
 
 ## 🐭 Fare ve Peynir
 
-66 bölümlük labirent oyunu. Fareyi peynire götür: yıldızları topla, kediden kaç,
-tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it, anahtarla kapı aç.
+66 bölümlük labirent oyunu (60 bölüm + 6 bonus). Fareyi peynire götür: yıldızları
+topla, kediden kaç, tuzaklara basma, buzda kay, portaldan geç, kutuyu hedefe it,
+anahtarla kapı aç.
+
+**Bölüm sırası kolaydan zora:**
+
+- **1–10: Öğretici bölümler.** Her yeni şey (yıldız, buz, portal, anahtar ve kapı,
+  birden çok anahtar, çukur, kutu, kedi) burada ilk kez ve tek başına çıkıyor.
+  Bölüm ilk açıldığında oyun başlamadan önce küçük bir kart o şeyi anlatıyor
+  (sesli okunuyor). Bitirilen bölümde kart bir daha çıkmıyor.
+- **12–25: Pratik.** Öğrenilenler karışık, saat ve kendi yürüyen kedi yok.
+- **26: Saat ve kendi yürüyen kedi.** İkisi de ilk kez burada çıkıyor, bir kereliğine
+  öğretici olarak: süre bol, kedi yavaş ve geride başlıyor, kart saniyeleri
+  seçili zorluğa göre söylüyor.
+- **27–65: Kolaydan zora.** Saatli bölümler diğerlerinin arasına zorluklarına göre
+  yerleşti. Sonuncusu (65) en zoru.
 
 - **⏰ Zamana karşı** — geri sayan bir saat. Süre biterse bir can gider, bölüm
   baştan başlar. Erken bitirirsen kalan her saniye puana yazılır.
 - **🐱 Kendi yürüyen kedi** — bu kedi sadece sen hareket edince değil, kendi
-  başına da ilerliyor (bölüme göre 2,3–3,6 saniyede bir adım). Durursan yaklaşır.
+  başına da ilerliyor (bölüme göre 2,3–4,5 saniyede bir adım). Durursan yaklaşır.
 - **🔑 Kaç anahtar, o kadar kapı** — anahtarlar cepte birikir; iki anahtar
   topladıysan iki kapı açarsın. Cepteki anahtar sayısı üst şeritte görünür.
 - **🎁 Bonus bölümler** — her 10 bölümde bir (11, 22, 33, 44, 55, 66). Kedi yok,
@@ -23,8 +37,12 @@ Zor'da kedi hızlı ve süre kısa (×0,85).
 
 Bölümlerin tamamı, oyunun kendi kurallarını birebir taklit eden bir çözücüyle
 doğrulandı: kedi kovalarken kaçışın var mı, kutu itilebiliyor mu, anahtar kapıya
-yetiyor mu, tuzaksız bir yol kalıyor mu, verilen süre yavaş oynayan bir çocuğa
-yetiyor mu.
+yetiyor mu, tuzaksız bir yol kalıyor mu, bütün yıldızlara ulaşılabiliyor mu,
+verilen süre yavaş oynayan bir çocuğa (hamle başına 1,8 saniye) üç zorlukta da
+yetiyor mu. Zorluk sırası da aynı çözücünün ölçümlerinden çıktı: en kısa yolun
+uzunluğu, bölümdeki mekanik sayısı, kutu bulmacasında çıkmaza düşüren hamle
+oranı, kedi ve çukurun can aldığı hamle oranı, saatli bölümde çocuğun ne kadar
+hızlı oynaması gerektiği.
 
 **▶️ Oyna:** https://olgunak.github.io/cocuk-oyunlari/fare-ve-peynir/
 
@@ -39,7 +57,7 @@ yetiyor mu.
   oynamaya devam edersin. Tercih hatırlanır.
 
 Oyun ekranında sadece labirent, oklar ve üstte küçük bir bilgi şeridi durur.
-Geri kalan her şey — yardım, baştan başlat, zorluk, kahraman, 40 bölümün
+Geri kalan her şey — yardım, baştan başlat, zorluk, kahraman, 66 bölümün
 listesi, çıkartmalar, müzik ve ses ayarları — sağ üstteki **⚙️** düğmesinin
 arkasında.
 - Klavye bağlıysa: yön tuşları / WASD, `H` yardım, `R` baştan, `M` müzik,
