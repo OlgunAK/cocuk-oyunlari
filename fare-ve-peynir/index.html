@@ -255,6 +255,15 @@
   .lvl-btn.done{ background:#b8ea9d; box-shadow:0 3px 0 #7fbb63; }
   .lvl-btn.bonus{ background:#ffe08a; box-shadow:0 3px 0 #d9a441; }
   .lvl-btn.bonus.done{ background:#ffd24d; box-shadow:0 3px 0 #c9901f; }
+  .lvl-btn.boss{ background:#ffc2cf; box-shadow:0 3px 0 #d9738a; }
+  .lvl-btn.boss.done{ background:#ff9fb4; box-shadow:0 3px 0 #c25570; }
+  /* Boss: Kocaman Kedi */
+  .boss .glyph{ font-size:118%; }
+  .boss .taç{ position:absolute; top:-18%; left:50%; transform:translateX(-50%); font-size:52%; z-index:6; pointer-events:none; }
+  .boss.sersem{ animation:bossSersem .9s linear infinite; background:#e8d8ff !important; }
+  .boss.uyku{ animation:none; background:#d9e4ff !important; }
+  @keyframes bossSersem{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .yumak{ animation:bounce 1.3s infinite; }
   .lvl-btn.active{ background:var(--gold); color:#fff; box-shadow:0 3px 0 #b87b00; }
 
   /* ---------- çıkartmalar ---------- */
@@ -429,6 +438,7 @@
     <span class="box" id="limitBox" style="display:none">⏳ <b id="limit">0</b></span>
     <span class="box" id="sureBox" style="display:none">⏰ <b id="sayac">0</b></span>
     <span class="box" id="anahtarBox" style="display:none">🔑 <b id="anahtarSayi">0</b></span>
+    <span class="box" id="bossBox" style="display:none">👑 <b id="bossCan"></b></span>
     <button id="extrasBtn" class="ayar-btn" onclick="toggleExtras()" aria-label="Ayarlar">⚙️</button>
   </div>
 
@@ -453,7 +463,7 @@
 <div class="overlay" id="extras">
   <div class="kutu">
     <h1>🐭 Fare ve Peynir 🧀</h1>
-    <div class="subtitle">66 bölüm + 6 bonus! Peyniri bul, yıldızları topla, kediden kaç, saate yetiş!</div>
+    <div class="subtitle">60 bölüm + 6 boss + 6 bonus! Peyniri bul, yıldızları topla, kediden kaç, saate yetiş!</div>
 
     <button class="kur-btn" id="kurBtn" onclick="showInstall()">📲 Ana Ekrana Ekle — tam ekran oyna</button>
     <div class="kur-tamam" id="kurTamam" hidden>✅ Oyun ana ekranında — tam ekran oynuyorsun!</div>
@@ -1036,10 +1046,19 @@ function bubbleText(text, alsoSpeak = true){
 /* ==========================================================
    5) HÜCRE TİPLERİ VE SEVİYELER
    ========================================================== */
-const EMPTY=0, WALL=1, MOUSE=2, CHEESE=3, CAT=4, TRAP=5, ICE=6, PORTAL=7, STAR=8, KEY=9, DOOR=10, BOX=11, TARGET=12;
+const EMPTY=0, WALL=1, MOUSE=2, CHEESE=3, CAT=4, TRAP=5, ICE=6, PORTAL=7, STAR=8, KEY=9, DOOR=10, BOX=11, TARGET=12, YARN=13;
 
 const levels = [
-  {name:'İlk Adım', tip:'Sağa doğru yürü ve peyniri ye!', grid:[
+  /* ====== 1-10: OGRETICI BOLUMLER ======
+     Oyundaki her oge (yildiz, buz, portal, anahtar, cukur, kutu, kedi) burada
+     ilk kez ve tek basina gosteriliyor. ogretici:{...} -> bolum ilk acildiginda
+     oyun baslamadan once bir kere anlatan kart.
+     Her 10 bolumden sonra bir BOSS (11, 23, 35, 47, 59, 71), hemen ardindan
+     BONUS (12, 24, ..., 72) geliyor.
+     boss:{can, sersem} -> CAT hucresi Kocaman Kedi olur; her yun yumagi (13)
+     bir can goturur ve onu 'sersem' sira boyunca durdurur. Cani bitince
+     uyur, peynirin kilidi acilir. ====== */
+  {name:'İlk Adım', tip:'Sağa doğru yürü ve peyniri ye!', ogretici:{baslik:'Merhaba! 🧀', metin:'👆 Parmağını labirentin üstünde kaydır ya da ok tuşlarına bas. Fareyi peynire götür!', emoji:'🐭'}, grid:[
     [0,0,0,0,0],
     [2,0,8,0,3],
     [0,0,0,0,0],
@@ -1051,29 +1070,29 @@ const levels = [
     [1,1,1,1,1,1,0],
     [0,0,0,8,0,0,8],
   ]},
-  {name:'Yıldızlı Gece', tip:'Bütün yıldızları toplamayı dene!', grid:[
+  {name:'Yıldızlı Gece', tip:'Bütün yıldızları toplamayı dene!', ogretici:{baslik:'Yeni: Yıldız', metin:'Yıldızlar ekstra puan kazandırır. Hepsini toplayıp kısa yoldan gidersen üç yıldız alırsın!', emoji:'⭐'}, grid:[
     [2,8,0,0,1,0,0],
     [0,1,1,0,1,0,8],
     [0,0,0,0,0,0,0],
     [1,1,8,1,1,1,0],
     [0,0,0,0,0,0,3],
   ]},
-  {name:'Buz Pateni', tip:'Buzda durmadan kayarsın, dikkat!', grid:[
+  {name:'Buz Pateni', tip:'Buzda durmadan kayarsın, dikkat!', ogretici:{baslik:'Yeni: Buz', metin:'Buza basınca duramazsın! Duvara çarpana ya da buz olmayan bir kareye gelene kadar kayarsın.', emoji:'❄️'}, grid:[
     [2,6,6,6,6,6,0],
     [1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0],
-    [0,6,6,6,1,1,1],
-    [0,1,1,6,0,0,8],
+    [0,6,6,8,1,1,1],
+    [0,1,1,6,1,1,1],
     [0,0,8,6,6,6,3],
   ]},
-  {name:'Vuuv Portal', tip:'Mor girdaba gir, öbür girdaptan çık!', grid:[
+  {name:'Vuuv Portal', tip:'Mor girdaba gir, öbür girdaptan çık!', ogretici:{baslik:'Yeni: Portal', metin:'Mor girdaba girersen öbür girdaptan çıkarsın. Uzak yerlere kestirme yol!', emoji:'🌀'}, grid:[
     [2,0,0,1,0,0,7],
     [0,1,0,1,0,1,0],
     [0,1,0,0,8,1,0],
     [0,1,1,1,1,1,8],
     [7,0,0,0,0,0,3],
   ]},
-  {name:'Kapıyı Aç', tip:'Önce anahtarı al, sonra kapıya git.', grid:[
+  {name:'Kapıyı Aç', tip:'Önce anahtarı al, sonra kapıya git.', ogretici:{baslik:'Yeni: Anahtar ve Kapı', metin:'Kapıdan anahtarsız geçemezsin. Önce anahtarı al, sonra kapıya yürü: kapı açılır!', emoji:'🔑'}, grid:[
     [2,0,0,0,9,0,0],
     [0,1,1,1,1,1,0],
     [0,0,0,0,0,0,0],
@@ -1082,16 +1101,12 @@ const levels = [
     [0,1,1,1,1,1,0],
     [0,0,0,0,0,8,3],
   ]},
-  {name:'Kedi Geliyor!', tip:'Kedi seni kovalıyor, hızlı ol!', grid:[
-    [2,0,0,0,0,0,0],
-    [0,1,1,1,1,1,0],
-    [0,1,0,0,0,1,0],
-    [0,0,0,4,0,0,0],
-    [0,1,0,0,0,1,0],
-    [0,1,1,1,1,1,0],
-    [0,0,0,0,0,0,3],
+  {name:'Koridor', tip:'Anahtarları sırayla topla, kapıları aç!', ogretici:{baslik:'Kaç anahtar, o kadar kapı', metin:'Her kapı bir anahtar harcar. İki kapı varsa iki anahtar lazım! Cebindeki anahtarları üstte görürsün.', emoji:'🔑'}, grid:[
+    [1,1,1,1,1,1,1,1,1],
+    [2,0,9,10,0,9,10,8,3],
+    [1,1,1,1,1,1,1,1,1],
   ]},
-  {name:'Dikkat Tuzak', tip:'Kara çukurlara sakın basma!', grid:[
+  {name:'Dikkat Tuzak', tip:'Kara çukurlara sakın basma!', ogretici:{baslik:'Yeni: Çukur', metin:'Kara çukura basarsan bir can gider ve bölüm baştan başlar. Etrafından dolaş!', emoji:'🕳️'}, grid:[
     [2,0,5,0,0,0,0],
     [0,1,1,1,1,1,5],
     [0,0,0,0,0,0,0],
@@ -1100,27 +1115,33 @@ const levels = [
     [0,1,5,1,1,1,0],
     [0,0,8,0,0,8,3],
   ]},
-  {name:'İt Kutuyu', tip:'Kutuyu yanlış yere itersen yol kapanır!', grid:[
-    [2,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1],
-    [0,0,0,11,0,0,0],
-    [1,1,1,0,1,1,1],
-    [0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,0],
-    [0,0,8,0,0,8,3],
+  {name:'Yap Boz', tip:'Kutuyu yeşil alana it, sonra peynire koş!', ogretici:{baslik:'Yeni: Kutu', metin:'Kutunun arkasına geçip yürürsen kutuyu itersin. Bütün kutular yeşil alana girince peynirin kilidi açılır. Kutu sıkışırsa ⚙️ → baştan başla.', emoji:'📦'}, grid:[
+    [1,1,1,1,1,1,1],
+    [1,2,0,11,0,12,1],
+    [1,0,0,0,0,0,1],
+    [1,0,8,0,0,3,1],
+    [1,1,1,1,1,1,1],
   ]},
-  {name:'Karmaşa', tip:'Buz, portal ve anahtar bir arada!', grid:[
-    [2,0,8,0,0,0,7],
+  {name:'Kedi Geliyor!', tip:'Kedi seni kovalıyor, hızlı ol!', ogretici:{baslik:'Yeni: Kedi', metin:'Sen yürüdükçe kedi de sana doğru yürür. Ona yakalanmadan peynire koş!', emoji:'🐱'}, grid:[
+    [2,0,0,0,0,0,0],
     [0,1,1,1,1,1,0],
-    [0,6,6,6,6,6,0],
-    [1,1,1,1,1,1,0],
-    [8,0,0,0,0,0,0],
+    [0,1,0,0,0,1,0],
+    [0,0,0,4,0,0,0],
+    [0,1,0,0,0,1,0],
     [0,1,1,1,1,1,0],
-    [7,0,0,9,0,0,0],
-    [1,1,1,10,1,1,1],
     [0,0,0,0,0,0,3],
   ]},
-
+  /* ---- BOSS ---- */
+  {name:'Kocaman Kedi', tip:'Yumakları topla, Kocaman Kedi\'yi uyut, sonra peynire koş!', boss:{can:2, sersem:4}, enAz:24, ogretici:{baslik:'Boss: Kocaman Kedi', metin:'Kocaman Kedi peynirin başında bekliyor ve seni kovalıyor. Her 🧶 yün yumağını aldığında onunla oynamaya dalar: bir canı gider ve başı döner, birkaç adım yürüyemez, seni yakalayamaz. Canları bitince uyur ve peynirin kilidi açılır!', emoji:'😾'}, grid:[
+    [2,0,0,0,0,0,13],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,0,0,4,0,0,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [13,0,0,0,0,0,0],
+    [1,1,1,3,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Peynir Bahçesi', tip:'Bonus bölüm! Tehlike yok — bütün yıldızları topla, puanın ikiye katlansın.', bonus:true, grid:[
     [2,8,0,0,8,0,0],
@@ -1130,70 +1151,8 @@ const levels = [
     [0,8,0,0,0,8,0],
     [0,0,0,0,0,0,3],
   ]},
-  {name:'Büyük Final', tip:'Her şey bir arada! Sakin ol ve düşün.', grid:[
-    [2,0,8,0,0,0,5,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,6,6,6,1,1,0],
-    [9,1,1,1,1,1,1,1,8],
-    [0,0,0,0,4,0,0,0,0],
-    [1,1,1,10,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,3],
-  ]},
-  {name:'Dolambaçlı Yol', tip:'Yolunu iyi seç, acele etme.', grid:[
-    [2,0,0,1,0,0,0,0,0],
-    [0,1,5,1,0,1,11,1,0],
-    [0,0,0,0,0,1,0,0,8],
-    [0,1,1,1,0,1,1,1,0],
-    [0,1,9,0,0,0,0,1,0],
-    [0,1,1,1,6,6,6,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,10,1,1,1,1],
-    [0,8,0,0,0,0,0,8,3],
-  ]},
-  {name:'Peynir Mabedi', tip:'En zor seviye! Sen yapabilirsin 💪', grid:[
-    [2,0,0,0,1,0,8,0,0],
-    [0,1,1,5,1,0,1,1,0],
-    [0,0,11,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,7],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,6,6,6,1,1,1,1],
-    [9,1,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,5,0,10,0,0,0,0],
-    [7,1,1,1,1,1,1,1,3],
-  ]},
-  {name:'Yap Boz', tip:'Kutuyu yeşil alana it, sonra peynire koş!', grid:[
-    [1,1,1,1,1,1,1],
-    [1,2,0,11,0,12,1],
-    [1,0,0,0,0,0,1],
-    [1,0,8,0,0,3,1],
-    [1,1,1,1,1,1,1],
-  ]},
-  {name:'Koridor', tip:'Anahtarları sırayla topla, kapıları aç!', grid:[
-    [1,1,1,1,1,1,1,1,1],
-    [2,0,9,10,0,9,10,8,3],
-    [1,1,1,1,1,1,1,1,1],
-  ]},
-  {name:'Çifte Kutu', tip:'İki kutu, iki yeşil alan!', grid:[
-    [1,1,1,1,1,1,1],
-    [1,2,0,11,0,12,1],
-    [1,0,0,0,0,0,1],
-    [1,0,11,0,0,12,1],
-    [1,0,0,0,0,0,1],
-    [1,8,0,0,0,3,1],
-    [1,1,1,1,1,1,1],
-  ]},
-  {name:'Yıldız Avı', tip:'Yıldızları toplaya toplaya peynire git!', grid:[
-    [2,0,0,8,0,0,0],
-    [0,1,0,1,0,1,8],
-    [8,0,0,0,0,0,0],
-    [0,1,8,1,0,1,0],
-    [0,0,0,0,8,0,0],
-    [8,1,0,1,0,1,0],
-    [0,0,0,8,0,0,3],
-  ]},
+
+  /* ====== 13-25: PRATIK (saat ve kendi yuruyen kedi YOK) ====== */
   {name:'Buz Gölü', tip:'Buzda kayarken yıldızlar seni durdurur!', grid:[
     [0,0,0,8,0,0,0,0],
     [0,6,6,6,6,6,6,0],
@@ -1203,16 +1162,6 @@ const levels = [
     [0,6,1,6,6,6,6,0],
     [0,0,0,0,0,8,0,0],
   ]},
-  {name:'Tuzak Tarlası', tip:'Çukurların arasından dikkatlice geç!', grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,5,0,5,0,5,0,5,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,5,0,5,8,5,0,5,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,5,0,5,0,5,0,5,0],
-    [0,0,8,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,3],
-  ]},
   {name:'Portal Parkuru', tip:'Portala gir, öbür taraftan çık!', grid:[
     [2,0,7,1,0,0,0],
     [0,1,0,1,0,1,0],
@@ -1221,44 +1170,6 @@ const levels = [
     [0,8,0,1,0,1,3],
     [0,1,0,1,0,1,0],
     [0,0,0,1,7,0,0],
-  ]},
-
-  /* ---- BONUS ---- */
-  {name:'🎁 Bonus: Yıldız Yağmuru', tip:'Bonus bölüm! Yıldız yağıyor, hepsini topla!', bonus:true, grid:[
-    [2,0,8,0,8,0,8,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [8,0,0,0,0,0,0,0,8],
-    [0,1,0,1,0,1,0,1,0],
-    [8,0,0,0,0,0,0,0,8],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,8,0,8,0,8,0,3],
-  ]},
-  {name:'Kovalamaca', tip:'Kedi arkanda! Hiç durmadan koş!', grid:[
-    [2,0,0,0,0,0,0,0,4],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,8,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [3,1,1,1,1,1,1,1,1],
-  ]},
-  {name:'Anahtar Peşinde', tip:'İki anahtar, iki kapı. Sırayla!', grid:[
-    [2,0,0,1,9,0,0,0,0],
-    [0,1,0,1,0,1,1,1,0],
-    [0,1,0,0,0,1,8,1,8],
-    [0,1,1,1,1,1,0,1,1],
-    [9,1,0,10,0,0,0,1,0],
-    [0,1,0,1,1,1,1,1,0],
-    [0,0,0,10,0,0,0,0,3],
-  ]},
-  {name:'Kutu Deposu', tip:'Üç kutuyu da yeşil alanlara it!', grid:[
-    [1,1,1,1,1,1,1,1],
-    [1,2,0,11,0,0,12,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,11,0,0,12,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,11,0,0,12,1],
-    [1,0,8,0,0,0,3,1],
-    [1,1,1,1,1,1,1,1],
   ]},
   {name:'Buz Bilmecesi', tip:'Buz seni kaydırır, duvarlar durdurur!', grid:[
     [2,6,6,6,6,6,6,8],
@@ -1270,120 +1181,14 @@ const levels = [
     [6,6,6,6,6,6,6,6],
     [8,6,6,6,6,6,6,6],
   ]},
-  {name:'Yıldız Labirenti', tip:'Yıldızlar köşelerde saklı!', grid:[
-    [2,0,0,0,0,0,0,0,8],
-    [1,1,1,1,1,1,1,1,0],
-    [8,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,8,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,8,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,8,0,0,3],
-  ]},
-  {name:'Kedi ve Anahtar', tip:'Önce anahtar, sonra kediden kaç!', grid:[
-    [2,0,0,0,0,0,0,0,9],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,8,0,0,0,0,0],
-    [1,10,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,4,0,0,8,0,0,3],
-  ]},
-  {name:'Kutular ve Kapı', tip:'Kutuları yerleştir, kapıyı aç!', grid:[
-    [1,1,1,1,1,1,1,1],
-    [1,2,0,11,0,12,9,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,11,0,0,12,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,1,10,1,1,1,1],
-    [1,0,0,0,0,8,3,1],
-    [1,1,1,1,1,1,1,1],
-  ]},
-  {name:'Derin Tuzaklar', tip:'Her adımını düşünerek at!', grid:[
-    [2,0,5,0,0,0,5,0,8],
-    [0,0,0,0,5,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,5,0,0,0,0,5,0],
-    [0,0,0,8,5,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,5,0,0,0,0,0],
-    [0,5,0,0,0,5,0,0,0],
-    [0,0,8,0,0,0,0,0,3],
-  ]},
-  {name:'Buzlu Depo', tip:'Buzun üstünde kutu itmek zor iştir!', grid:[
-    [1,1,1,1,1,1,1,1],
-    [1,2,0,11,6,6,12,1],
-    [1,0,0,0,6,0,0,1],
-    [1,0,11,0,6,0,12,1],
-    [1,0,0,0,0,0,0,1],
-    [1,8,0,6,6,0,3,1],
-    [1,1,1,1,1,1,1,1],
-  ]},
-  {name:'Gizli Geçit', tip:'Portalın ardında kilitli bir kapı var!', grid:[
-    [2,0,0,1,0,0,0,10,3],
-    [0,1,0,1,0,1,1,1,1],
-    [0,0,0,1,0,0,0,0,0],
-    [1,1,9,1,1,1,1,1,0],
-    [0,0,0,1,0,0,0,0,0],
-    [0,1,0,1,0,1,1,1,1],
-    [0,1,7,1,7,0,0,0,8],
-  ]},
-
-  /* ---- BONUS ---- */
-  {name:'🎁 Bonus: Buz Kaydırağı', tip:'Bonus bölüm! Buzda kay, yıldızları topla, eğlen!', bonus:true, grid:[
-    [2,6,6,6,6,6,6,6,8],
-    [0,1,1,1,1,1,1,1,0],
-    [8,6,6,6,6,6,6,6,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,6,6,6,6,6,6,6,8],
-    [0,1,1,1,1,1,1,1,0],
-    [8,0,0,0,0,0,0,0,3],
-  ]},
-  {name:'Kedi Dansı', tip:'Kedi köşede bekliyor. Uzak dur!', grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [4,0,0,0,8,0,0,0,3],
-  ]},
-  {name:'Sabırlı Fare', tip:'Uzun bir yol ama sen yaparsın!', grid:[
-    [2,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,1,0],
-    [8,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,1],
-    [0,0,0,6,6,6,0,0,0,8],
-    [1,1,1,1,1,1,1,1,1,0],
-    [8,0,0,0,0,9,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,1],
-    [0,0,0,0,10,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,1,3],
-  ]},
-  {name:'Dev Depo', tip:'Dört kutu! Gerçek bir depo ustası ol!', grid:[
-    [1,1,1,1,1,1,1,1,1],
-    [1,2,0,11,0,0,12,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,11,0,0,12,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,11,0,0,12,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,8,11,0,0,0,12,3,1],
-    [1,1,1,1,1,1,1,1,1],
-  ]},
-  {name:'Yıldız Fırtınası', tip:'Yıldız yağmuru! Hepsini kapabilir misin?', grid:[
-    [2,0,8,0,0,0,0,8,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,8,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [8,0,0,0,0,0,0,0,8],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,8,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,8,0,0,0,0,8,0,3],
+  {name:'Yıldız Avı', tip:'Yıldızları toplaya toplaya peynire git!', grid:[
+    [2,0,0,8,0,0,0],
+    [0,1,0,1,0,1,8],
+    [8,0,0,0,0,0,0],
+    [0,1,8,1,0,1,0],
+    [0,0,0,0,8,0,0],
+    [8,1,0,1,0,1,0],
+    [0,0,0,8,0,0,3],
   ]},
   {name:'Buz Sarayı', tip:'Buz sarayında kayarak peyniri bul!', grid:[
     [2,6,6,6,6,6,6,6,8],
@@ -1396,27 +1201,25 @@ const levels = [
     [6,6,6,6,1,6,6,6,6],
     [8,6,6,6,6,6,6,6,8],
   ]},
-  {name:'Çifte Tehlike', tip:'Hem kedi hem tuzak! Çok dikkatli ol!', grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,5,1,0,1,5,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,8,1,5,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,5,1,0,1,8,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,5,1,0,1,0],
-    [4,0,0,0,0,0,0,0,3],
+  {name:'Yıldız Fırtınası', tip:'Yıldız yağmuru! Hepsini kapabilir misin?', grid:[
+    [2,0,8,0,0,0,0,8,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,8,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [8,0,0,0,0,0,0,0,8],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,8,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,8,0,0,0,0,8,0,3],
   ]},
-  {name:'Usta İşi', tip:'Kutular, anahtar, buz... Hepsi bir arada!', grid:[
-    [1,1,1,1,1,1,1,1,1],
-    [1,2,0,11,0,12,0,9,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,11,0,0,12,0,0,1],
-    [1,0,0,0,6,6,6,0,1],
-    [1,10,1,1,1,1,1,1,1],
-    [1,0,0,8,0,6,0,0,1],
-    [1,0,0,0,0,0,0,3,1],
-    [1,1,1,1,1,1,1,1,1],
+  {name:'İt Kutuyu', tip:'Kutuyu yanlış yere itersen yol kapanır!', grid:[
+    [2,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1],
+    [0,0,0,11,0,0,0],
+    [1,1,1,0,1,1,1],
+    [0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,0],
+    [0,0,8,0,0,8,3],
   ]},
   {name:'Labirent Ustası', tip:'Labirentin kalbine ulaş!', grid:[
     [2,0,0,0,0,0,0,0,0,0,0],
@@ -1431,7 +1234,233 @@ const levels = [
     [0,1,1,1,1,0,1,1,1,1,0],
     [0,0,0,0,0,0,8,0,0,0,0],
   ]},
-  {name:'Son Sınav', tip:'Son sınava hazır mısın?', grid:[
+  {name:'Anahtar Peşinde', tip:'İki anahtar, iki kapı. Sırayla!', grid:[
+    [2,0,0,1,9,0,0,0,0],
+    [0,1,0,1,0,1,1,1,0],
+    [0,1,0,0,0,1,8,1,8],
+    [0,1,1,1,1,1,0,1,1],
+    [9,1,0,10,0,0,0,1,0],
+    [0,1,0,1,1,1,1,1,0],
+    [0,0,0,10,0,0,0,0,3],
+  ]},
+  {name:'Karmaşa', tip:'Buz, portal ve anahtar bir arada!', grid:[
+    [2,0,8,0,0,0,7],
+    [0,1,1,1,1,1,0],
+    [0,6,6,6,6,6,0],
+    [1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0],
+    [0,1,1,1,1,1,0],
+    [7,0,0,9,0,0,0],
+    [1,1,1,10,1,1,1],
+    [0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Kedi Kalesi', tip:'Kale çukurlarla çevrili. İki yumak, bir Kocaman Kedi!', boss:{can:2, sersem:3}, enAz:31, grid:[
+    [2,0,0,0,0,0,0,0,13],
+    [0,1,1,1,0,1,1,1,0],
+    [0,1,8,0,0,0,8,1,0],
+    [0,1,0,1,5,1,0,1,0],
+    [0,0,0,5,4,5,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,1,8,0,0,0,8,1,0],
+    [0,1,1,1,0,1,1,1,0],
+    [13,0,0,0,0,0,0,0,0],
+    [1,1,1,1,3,1,1,1,1],
+  ]},
+  /* ---- BONUS ---- */
+  {name:'🎁 Bonus: Yıldız Yağmuru', tip:'Bonus bölüm! Yıldız yağıyor, hepsini topla!', bonus:true, grid:[
+    [2,0,8,0,8,0,8,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [8,0,0,0,0,0,0,0,8],
+    [0,1,0,1,0,1,0,1,0],
+    [8,0,0,0,0,0,0,0,8],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,8,0,8,0,8,0,3],
+  ]},
+
+  {name:'Kovalamaca', tip:'Kedi arkanda! Hiç durmadan koş!', grid:[
+    [2,0,0,0,0,0,0,0,4],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,8,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [3,1,1,1,1,1,1,1,1],
+  ]},
+  /* ====== 26: SAAT + KENDI YURUYEN KEDI OGRETICISI ======
+     sure:<saniye>    -> geri sayan saat; sifirlanirsa bir can gider
+     kediSure:<ms>    -> kedi biz hareket etmesek de bu araliklarla bir adim atar
+     Ikisi de zorluga gore olcekleniyor (bkz. diffConfig). Ikisi de ilk kez
+     burada cikiyor, ondan once hicbir bolumde yok. ====== */
+  {name:'Tik Tak Kedi', tip:'Saat işliyor, kedi de kendi kendine yürüyor. Durmadan peynire git!', sure:80, kediSure:4500, ogretici:{baslik:'Yeni: Saat ve Kedi', metin:'⏰ Üstteki saat geri sayıyor: {sure} saniye içinde peynire ulaş. Erken bitirirsen kalan saniyeler puan olur. 🐱 Bu kedi sen dursan bile yürüyor: her {kedi} saniyede bir adım atar. Durma, yürümeye devam et!', emoji:'⏰'}, grid:[
+    [4,0,0,0,0,0,0,0,2],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,8,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,8,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  /* ====== 27-70: KOLAYDAN ZORA ======
+     Siralama bir cozucunun olcumlerine gore: en kisa yol, mekanik sayisi,
+     kutu bulmacalarinda cikmaza dusuren hamle orani, kedi/cukur olum orani,
+     saatli bolumlerde cocugun ne kadar hizli oynamasi gerektigi.
+     enAz:<n> -> cozucunun buldugu en az adim (kutulu / kediden dolanilan
+     / boss bolumlerinde pati izinin kisa yolu gercekte yurunemiyor). ====== */
+  {name:'Gizli Geçit', tip:'Portalın ardında kilitli bir kapı var!', grid:[
+    [2,0,0,1,0,0,0,10,3],
+    [0,1,0,1,0,1,1,1,1],
+    [0,0,0,1,0,0,0,0,0],
+    [1,1,9,1,1,1,1,1,0],
+    [0,0,0,1,0,0,0,0,0],
+    [0,1,0,1,0,1,1,1,1],
+    [0,1,7,1,7,0,0,0,8],
+  ]},
+  {name:'Yıldız Labirenti', tip:'Yıldızlar köşelerde saklı!', grid:[
+    [2,0,0,0,0,0,0,0,8],
+    [1,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,8,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,8,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,8,0,0,3],
+  ]},
+  {name:'Tuzak Tarlası', tip:'Çukurların arasından dikkatlice geç!', grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,5,0,5,0,5,0,5,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,5,0,5,8,5,0,5,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,5,0,5,0,5,0,5,0],
+    [0,0,8,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Kedi Dansı', tip:'Kedi köşede bekliyor. Uzak dur!', grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [4,0,0,0,8,0,0,0,3],
+  ]},
+  {name:'Buzda Yarış', tip:'Buzda kayarken zaman durmuyor!', sure:80, grid:[
+    [2,6,6,6,6,6,6,6,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,6,6,6,6,6,6,6,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,0,3],
+  ]},
+  {name:'Yıldız Yarışı', tip:'Yıldızları topla ama saate de bak!', sure:50, grid:[
+    [2,0,0,0,8,0,0,0,0],
+    [0,1,1,0,1,0,1,1,0],
+    [0,0,1,0,0,0,1,0,0],
+    [8,0,1,1,1,1,1,0,8],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,0,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Derin Tuzaklar', tip:'Her adımını düşünerek at!', grid:[
+    [2,0,5,0,0,0,5,0,8],
+    [0,0,0,0,5,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,5,0,0,0,0,5,0],
+    [0,0,0,8,5,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,0,0,5,0,0,0,0,0],
+    [0,5,0,0,0,5,0,0,0],
+    [0,0,8,0,0,0,0,0,3],
+  ]},
+  {name:'Çifte Tehlike', tip:'Hem kedi hem tuzak! Çok dikkatli ol!', grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,5,1,0,1,5,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,8,1,5,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,5,1,0,1,8,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,5,1,0,1,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Uykusuz Kedi', tip:'Bu Kocaman Kedi sen dursan bile yürüyor. Üç yumak topla!', boss:{can:3, sersem:4}, kediSure:4000, enAz:31, grid:[
+    [2,0,0,0,1,0,0,0,13],
+    [0,1,1,0,1,0,1,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,0,0,1,4,1,0,0,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,1,0,1,0,1,1,0],
+    [13,0,0,0,0,0,0,0,13],
+    [1,1,1,1,3,1,1,1,1],
+  ]},
+  /* ---- BONUS ---- */
+  {name:'🎁 Bonus: Buz Kaydırağı', tip:'Bonus bölüm! Buzda kay, yıldızları topla, eğlen!', bonus:true, grid:[
+    [2,6,6,6,6,6,6,6,8],
+    [0,1,1,1,1,1,1,1,0],
+    [8,6,6,6,6,6,6,6,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,6,6,6,6,6,6,6,8],
+    [0,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0,0,3],
+  ]},
+
+  {name:'Kedi ve Anahtar', tip:'Önce anahtar, sonra kediden kaç!', grid:[
+    [2,0,0,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,8,0,0,0,0,0],
+    [1,10,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,4,0,0,8,0,0,3],
+  ]},
+  {name:'Sabırlı Fare', tip:'Uzun bir yol ama sen yaparsın!', grid:[
+    [2,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1],
+    [0,0,0,6,6,6,0,0,0,8],
+    [1,1,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,9,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,10,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1,3],
+  ]},
+  {name:'Çifte Kutu', tip:'İki kutu, iki yeşil alan!', enAz:14, grid:[
+    [1,1,1,1,1,1,1],
+    [1,2,0,11,0,12,1],
+    [1,0,0,0,0,0,1],
+    [1,0,11,0,0,12,1],
+    [1,0,0,0,0,0,1],
+    [1,8,0,0,0,3,1],
+    [1,1,1,1,1,1,1],
+  ]},
+  {name:'Dolambaçlı Yol', tip:'Yolunu iyi seç, acele etme.', grid:[
+    [2,0,0,1,0,0,0,0,0],
+    [0,1,5,1,0,1,11,1,0],
+    [0,0,0,0,0,1,0,0,8],
+    [0,1,1,1,0,1,1,1,0],
+    [0,1,9,0,0,0,0,1,0],
+    [0,1,1,1,6,6,6,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,10,1,1,1,1],
+    [0,8,0,0,0,0,0,8,3],
+  ]},
+  {name:'Buzlu Depo', tip:'Buzun üstünde kutu itmek zor iştir!', enAz:16, grid:[
+    [1,1,1,1,1,1,1,1],
+    [1,2,0,11,6,6,12,1],
+    [1,0,0,0,6,0,0,1],
+    [1,0,11,0,6,0,12,1],
+    [1,0,0,0,0,0,0,1],
+    [1,8,0,6,6,0,3,1],
+    [1,1,1,1,1,1,1,1],
+  ]},
+  {name:'Zorlu Sınav', tip:'Anahtar, çukur ve kedi bir arada. Hazır mısın?', grid:[
     [2,0,0,0,0,0,0,0,0,9],
     [0,1,1,1,1,1,1,1,1,0],
     [0,0,0,5,0,0,0,8,0,0],
@@ -1443,25 +1472,61 @@ const levels = [
     [0,0,5,0,0,0,0,5,0,0],
     [1,1,1,1,3,1,1,1,1,1],
   ]},
-  {name:'Şampiyonun Sınavı', tip:'Büyük final! Bütün hünerlerini göster!', grid:[
-    [2,0,0,0,0,0,0,0,0,0,9],
-    [0,1,1,1,1,1,1,1,1,1,0],
-    [0,0,8,0,0,0,0,0,8,0,0],
-    [1,1,1,1,1,10,1,1,1,1,1],
-    [9,0,0,0,0,0,0,0,0,0,8],
-    [0,0,0,11,0,0,0,12,0,0,0],
-    [5,0,6,6,6,0,6,6,6,0,5],
-    [1,1,1,1,1,10,1,1,1,1,1],
-    [4,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,1,0],
-    [8,0,0,0,0,0,0,0,0,0,3],
+  {name:'Peynir Mabedi', tip:'Buz, portal, kutu, anahtar... Sen yapabilirsin 💪', grid:[
+    [2,0,0,0,1,0,8,0,0],
+    [0,1,1,5,1,0,1,1,0],
+    [0,0,11,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,7],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,6,6,6,1,1,1,1],
+    [9,1,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,5,0,10,0,0,0,0],
+    [7,1,1,1,1,1,1,1,3],
   ]},
-
-  /* ====== 41-60: ZAMANA KARSI ve KOVALAMACA ======
-     sure:<saniye>    -> geri sayan saat; sifirlanirsa bir can gider
-     kediSure:<ms>    -> kedi biz hareket etmesek de bu araliklarla bir adim atar
-     Ikisi de zorluga gore olcekleniyor (bkz. diffConfig). ====== */
-
+  {name:'Buz Kaçışı', tip:'Buzdan kay, portaldan kaç, kediyi ek!', kediSure:3000, grid:[
+    [2,6,6,6,0,0,0,0,7],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,4,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1],
+    [0,6,6,6,6,6,6,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [7,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Kutu Deposu', tip:'Üç kutuyu da yeşil alanlara it!', enAz:22, grid:[
+    [1,1,1,1,1,1,1,1],
+    [1,2,0,11,0,0,12,1],
+    [1,0,0,0,0,0,0,1],
+    [1,0,0,11,0,0,12,1],
+    [1,0,0,0,0,0,0,1],
+    [1,0,0,11,0,0,12,1],
+    [1,0,8,0,0,0,3,1],
+    [1,1,1,1,1,1,1,1],
+  ]},
+  {name:'Tetikte Kedi', tip:'Açık alanda kedi seni her yerden yakalayabilir. Durma!', kediSure:3500, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Buz Kalesi', tip:'Buzda kayarsın, Kocaman Kedi kaymaz. Üç yumak!', boss:{can:3, sersem:3}, kediSure:3500, enAz:35, grid:[
+    [2,0,0,0,0,0,0,0,0,0,13],
+    [0,1,6,6,6,6,6,6,6,1,0],
+    [0,1,0,0,0,5,0,0,0,1,0],
+    [0,6,0,1,1,0,1,1,0,6,0],
+    [0,6,0,1,0,4,0,1,0,6,0],
+    [0,6,0,0,0,0,0,0,0,6,0],
+    [0,1,0,1,1,5,1,1,0,1,0],
+    [13,0,0,0,0,0,0,0,0,0,13],
+    [1,1,1,1,1,3,1,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Portal Karnavalı', tip:'Bonus bölüm! Girdaplarla ışınlan, yıldızları kap!', bonus:true, grid:[
     [2,0,8,0,0,0,7,0,8],
@@ -1472,33 +1537,45 @@ const levels = [
     [0,1,1,1,1,1,1,1,0],
     [7,0,8,0,0,0,8,0,3],
   ]},
-  {name:'Tik Tak Başlıyor', tip:'Saat işliyor! Peynire vakit dolmadan yetiş.', sure:70, grid:[
+
+  {name:'Kedi ve Buz', tip:'Buzda kayarsın, kedi kaymaz. Dikkat!', kediSure:3200, grid:[
     [2,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
+    [0,1,6,6,6,6,6,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,0,1,1,1,0,1,0],
+    [0,0,0,1,4,1,0,0,0],
+    [0,1,0,1,0,1,0,1,0],
+    [0,1,0,0,0,0,0,1,0],
+    [0,1,6,6,6,6,6,1,0],
     [0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Tetikte Kedi', tip:'Bu kedi sen dursan bile yürüyor. Durma!', kediSure:3500, grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,0,1,0,1,0,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [4,0,0,0,0,0,0,0,3],
+  {name:'Saniyeler', tip:'Kısa yol ama çok az zaman. Koş!', sure:50, grid:[
+    [2,0,0,0,0,0,0],
+    [1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1],
+    [0,0,0,0,0,0,3],
   ]},
-  {name:'Yıldız Yarışı', tip:'Yıldızları topla ama saate de bak!', sure:50, grid:[
-    [2,0,0,0,8,0,0,0,0],
-    [0,1,1,0,1,0,1,1,0],
-    [0,0,1,0,0,0,1,0,0],
-    [8,0,1,1,1,1,1,0,8],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,0,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,3],
+  {name:'Kutular ve Kapı', tip:'Kutuları yerleştir, kapıyı aç!', enAz:24, grid:[
+    [1,1,1,1,1,1,1,1],
+    [1,2,0,11,0,12,9,1],
+    [1,0,0,0,0,0,0,1],
+    [1,0,11,0,0,12,0,1],
+    [1,0,0,0,0,0,0,1],
+    [1,1,1,10,1,1,1,1],
+    [1,0,0,0,0,8,3,1],
+    [1,1,1,1,1,1,1,1],
+  ]},
+  {name:'Amansız Takip', tip:'Kedi hiç durmuyor. Sen de durma!', kediSure:2400, grid:[
+    [2,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,1,0],
+    [0,1,0,0,0,0,0,0,1,0],
+    [0,1,0,1,1,1,1,0,1,0],
+    [0,1,0,1,4,0,0,0,1,0],
+    [0,1,0,1,1,1,1,0,1,0],
+    [0,1,0,0,0,0,0,0,1,0],
+    [0,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,3],
   ]},
   {name:'Kaçış Koridoru', tip:'Kedi peşinde! Halkanın etrafından dolaş, köşeye sıkışma.', kediSure:3000, grid:[
     [2,0,0,0,0,0,0,0,0,0,4],
@@ -1511,28 +1588,7 @@ const levels = [
     [0,1,1,1,1,0,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Buzda Yarış', tip:'Buzda kayarken zaman durmuyor!', sure:80, grid:[
-    [2,6,6,6,6,6,6,6,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,6,6,6,6,6,6,6,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,0,3],
-  ]},
-  {name:'Kedi ve Buz', tip:'Buzda kayarsın, kedi kaymaz. Dikkat!', kediSure:3200, grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,6,6,6,6,6,1,0],
-    [0,1,0,0,0,0,0,1,0],
-    [0,1,0,1,1,1,0,1,0],
-    [0,0,0,1,4,1,0,0,0],
-    [0,1,0,1,1,1,0,1,0],
-    [0,1,0,0,0,0,0,1,0],
-    [0,1,6,6,6,6,6,1,0],
-    [0,0,0,0,0,0,0,0,3],
-  ]},
-  {name:'Portal Kaçamağı', tip:'Kedi yaklaşınca portala atla!', kediSure:3000, grid:[
+  {name:'Portal Kaçamağı', tip:'Kedi yaklaşınca portala atla!', kediSure:3000, enAz:22, grid:[
     [2,0,0,1,0,0,0,0,7],
     [0,1,0,1,0,1,1,1,0],
     [0,1,0,0,0,1,0,0,0],
@@ -1552,15 +1608,22 @@ const levels = [
     [0,1,1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Hızlı Kedi', tip:'Bu kedi çok hızlı! Hiç durma.', kediSure:2300, grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,1,1,0,1,1,1,0],
-    [0,0,0,1,0,1,0,0,0],
-    [1,1,0,1,0,1,0,1,1],
+  {name:'Kedi Peşinde Yıldız', tip:'Yıldızlar güzel ama kedi çok yakın!', kediSure:3200, grid:[
+    [2,0,0,0,8,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,0],
-    [1,1,0,1,0,1,0,1,1],
-    [0,0,0,1,0,1,0,0,0],
-    [0,1,1,1,0,1,1,1,0],
+    [8,1,1,1,4,1,1,1,8],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,8,0,0,0,3],
+  ]},
+  {name:'Kedi ve Kapı', tip:'Anahtarı al, kapıyı aç — kedi beklemez!', kediSure:3400, grid:[
+    [2,0,0,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,10,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
     [4,0,0,0,0,0,0,0,3],
   ]},
   {name:'Zaman Tuzağı', tip:'Çukurlara basma, ama oyalanma da!', sure:35, grid:[
@@ -1572,7 +1635,19 @@ const levels = [
     [0,1,1,1,0,1,1,1,0],
     [0,0,5,0,0,0,5,0,3],
   ]},
-
+  /* ---- BOSS ---- */
+  {name:'Kedi Sarayı', tip:'Saat işliyor, Kocaman Kedi kovalıyor. Üç yumak, hızlı ol!', boss:{can:3, sersem:3}, sure:110, kediSure:3300, enAz:46, grid:[
+    [2,0,0,0,0,1,0,0,0,0,13],
+    [0,1,1,1,0,1,0,1,1,1,0],
+    [0,1,13,0,0,0,0,0,0,1,0],
+    [0,1,1,1,5,1,5,1,1,1,0],
+    [0,0,0,0,0,4,0,0,0,0,0],
+    [0,1,1,1,5,1,5,1,1,1,0],
+    [0,1,0,0,0,0,0,0,0,1,0],
+    [0,1,0,1,1,0,1,1,0,1,0],
+    [13,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,3,1,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Tatil Köyü', tip:'Bonus bölüm! Ne kedi var ne saat — keyfine bak.', bonus:true, grid:[
     [2,0,0,8,0,0,8,0,0,0],
@@ -1583,42 +1658,7 @@ const levels = [
     [0,0,0,1,0,0,1,0,0,0],
     [8,0,0,0,0,8,0,0,0,3],
   ]},
-  {name:'Zamanlı Depo', tip:'Kutuyu yeşil alana it, sonra peynire koş — saat işliyor!', sure:50, grid:[
-    [2,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,11,0,0,0,12,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,3],
-  ]},
-  {name:'Saniyeler', tip:'Kısa yol ama çok az zaman. Koş!', sure:45, grid:[
-    [2,0,0,0,0,0,0],
-    [1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1],
-    [0,0,0,0,0,0,3],
-  ]},
-  {name:'Kedi Peşinde Yıldız', tip:'Yıldızlar güzel ama kedi çok yakın!', kediSure:3200, grid:[
-    [2,0,0,0,8,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [8,1,1,1,4,1,1,1,8],
-    [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,8,0,0,0,3],
-  ]},
-  {name:'Buz Kaçışı', tip:'Buzdan kay, portaldan kaç, kediyi ek!', kediSure:3000, grid:[
-    [2,6,6,6,0,0,0,0,7],
-    [0,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,4,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1],
-    [0,6,6,6,6,6,6,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [7,0,0,0,0,0,0,0,3],
-  ]},
+
   {name:'Zamana Karşı Labirent', tip:'Büyük labirent, kısa zaman. Yolunu iyi seç!', sure:75, grid:[
     [2,0,0,0,1,0,0,0,0,0,0],
     [1,1,1,0,1,0,1,1,1,1,0],
@@ -1630,34 +1670,38 @@ const levels = [
     [0,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Kedi ve Kapı', tip:'Anahtarı al, kapıyı aç — kedi beklemez!', kediSure:3400, grid:[
-    [2,0,0,0,0,0,0,0,9],
+  {name:'Usta İşi', tip:'Kutular, anahtar, buz... Hepsi bir arada!', enAz:30, grid:[
+    [1,1,1,1,1,1,1,1,1],
+    [1,2,0,11,0,12,0,9,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,11,0,0,12,0,0,1],
+    [1,0,0,0,6,6,6,0,1],
+    [1,10,1,1,1,1,1,1,1],
+    [1,0,0,8,0,6,0,0,1],
+    [1,0,0,0,0,0,0,3,1],
+    [1,1,1,1,1,1,1,1,1],
+  ]},
+  {name:'Büyük Macera', tip:'Her şey bir arada! Sakin ol ve düşün.', enAz:30, grid:[
+    [2,0,8,0,0,0,5,0,0],
     [0,1,1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,10,1,1,1,1],
+    [0,1,1,6,6,6,1,1,0],
+    [9,1,1,1,1,1,1,1,8],
+    [0,0,0,0,4,0,0,0,0],
+    [1,1,1,10,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,0],
-    [4,0,0,0,0,0,0,0,3],
+    [0,1,1,1,1,1,1,1,3],
   ]},
-  {name:'Son Sprint', tip:'Düz koridor, çukurlar ve saniyeler!', sure:65, grid:[
-    [2,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,5,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,5,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,5,0,0],
-    [0,0,0,0,0,0,0,0,0,0,3],
-  ]},
-  {name:'Amansız Takip', tip:'Kedi hiç durmuyor. Sen de durma!', kediSure:2400, grid:[
-    [2,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,0],
-    [0,1,0,0,0,0,0,0,1,0],
-    [0,1,0,1,1,1,1,0,1,0],
-    [0,1,0,1,4,0,1,0,1,0],
-    [0,1,0,1,1,1,1,0,1,0],
-    [0,1,0,0,0,0,0,0,1,0],
-    [0,1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0,3],
+  {name:'Dev Depo', tip:'Dört kutu! Gerçek bir depo ustası ol!', enAz:34, grid:[
+    [1,1,1,1,1,1,1,1,1],
+    [1,2,0,11,0,0,12,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,11,0,0,12,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,11,0,0,12,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,8,11,0,0,0,12,3,1],
+    [1,1,1,1,1,1,1,1,1],
   ]},
   {name:'Zaman ve Kedi', tip:'Hem saat işliyor hem kedi kovalıyor!', sure:50, kediSure:3000, grid:[
     [2,0,0,0,0,0,0,0,0],
@@ -1670,7 +1714,27 @@ const levels = [
     [0,1,1,1,0,1,1,1,0],
     [0,0,0,0,0,0,0,0,3],
   ]},
-  {name:'Büyük Kovalamaca', tip:'Son bölüm! Yıldız, anahtar, kedi ve saat — hepsi bir arada 💪', sure:75, kediSure:2800, grid:[
+  {name:'Hızlı Kedi', tip:'Bu kedi çok hızlı! Hiç durma.', kediSure:2300, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [0,0,0,1,0,1,0,0,0],
+    [1,1,0,1,0,1,0,1,1],
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,0,1,0,1,0,1,1],
+    [0,0,0,1,0,1,0,0,0],
+    [0,1,1,1,0,1,1,1,0],
+    [4,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Son Sprint', tip:'Düz koridor, çukurlar ve saniyeler!', sure:72, grid:[
+    [2,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,5,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,5,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,5,0,0],
+    [0,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Büyük Kovalamaca', tip:'Yıldız, anahtar, kedi ve saat — hepsi bir arada 💪', sure:75, kediSure:2800, grid:[
     [2,0,0,0,8,0,0,0,0,0,9],
     [0,1,1,1,1,1,1,1,1,1,0],
     [0,0,0,0,0,0,0,0,0,0,0],
@@ -1681,7 +1745,41 @@ const levels = [
     [0,1,1,1,1,1,1,1,1,1,0],
     [8,0,0,0,0,0,0,0,0,0,3],
   ]},
-
+  {name:'Zamanlı Depo', tip:'Kutuyu yeşil alana it, sonra peynire koş — saat işliyor!', sure:55, enAz:24, grid:[
+    [2,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,11,0,0,0,12,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,3],
+  ]},
+  {name:'Şampiyonun Sınavı', tip:'Bütün hünerlerini göster! Sırada Kedi Kral var 👑', grid:[
+    [2,0,0,0,0,0,0,0,0,0,9],
+    [0,1,1,1,1,1,1,1,1,1,0],
+    [0,0,8,0,0,0,0,0,8,0,0],
+    [1,1,1,1,1,10,1,1,1,1,1],
+    [9,0,0,0,0,0,0,0,0,0,8],
+    [0,0,0,11,0,0,0,12,0,0,0],
+    [5,0,6,6,6,0,6,6,6,0,5],
+    [1,1,1,1,1,10,1,1,1,1,1],
+    [4,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,0],
+    [8,0,0,0,0,0,0,0,0,0,3],
+  ]},
+  /* ---- BOSS ---- */
+  {name:'Kedi Kral', tip:'Son boss! Dört yumak, saat ve Kedi Kral 👑', boss:{can:4, sersem:3}, sure:110, kediSure:2800, enAz:50, grid:[
+    [2,0,0,0,0,0,0,0,0,0,13],
+    [0,1,1,1,1,0,1,1,1,1,0],
+    [0,1,8,0,0,0,0,0,8,1,0],
+    [0,1,0,1,5,1,5,1,0,1,0],
+    [0,0,0,1,0,4,0,1,0,0,0],
+    [0,1,0,1,1,0,1,1,0,1,0],
+    [0,1,13,0,0,0,0,0,13,1,0],
+    [0,1,1,1,1,0,1,1,1,1,0],
+    [13,0,0,5,0,0,0,5,0,0,0],
+    [1,1,1,1,1,3,1,1,1,1,1],
+  ]},
   /* ---- BONUS ---- */
   {name:'🎁 Bonus: Büyük Ödül', tip:'Son bonus! On yıldız, bir peynir ve koca bir tebrik 🏆', bonus:true, grid:[
     [2,0,8,0,0,0,8,0,0,0,8],
@@ -1696,7 +1794,7 @@ const levels = [
 
 const stickerList = ['🌈','🍭','🎠','🦄','🚀','🐳','🎡','🍩','🎈','🏅','💎','👑','🦋','🌟','🍓','🐬','🌻','🎯','🛸','🐢','🍉','🎺','🧸','🪁','🍦','🐙','🌙','⚽','🎨','🦜','🍒','🛼','🤖','🎪','🐞','🍀','🎁','🦖','🌺','🏆',
   '⏰','🐆','🎳','🍕','🪀','🦩','🧩','🚁','🍿','🐧','🎸','🦚','🛵','🍄','🐠','🎤','🧁','🦔','🚂','👟',
-  '🎁','🎆','🏅','💎','👑','🌟'];
+  '🎁','🎆','🏅','💎','👑','🌟','🦁','🧶','🐯','🏰','🐉','🎖️'];
 
 /* ==========================================================
    6) ZORLUK
@@ -1739,6 +1837,10 @@ let optimalMoves = 0, moveLimit = null, hintCells = [], hintTimer = null;
 /* Zamana karsi bolumler ve kendi basina yuruyen kedi icin saat.
    Tek bir tikleme dongusu var; duraklatma zaman damgalarini ileri
    atarak yapiliyor, boylece ayarlar acikken sure islemiyor. */
+/* Boss (Kocaman Kedi): kedi gibi kovaliyor ama canli. Her yun yumagi (YARN)
+   bir can goturur ve onu birkac sira sersemletir (yurumez, yakalayamaz).
+   Cani bitince uyur; o zamana kadar peynir kilitli. */
+let boss = null;           // { can, max, sersem, sersemAdim } ya da null
 let kalanSure = null;      // saniye (null = bu bolumde sayac yok)
 let kediAralik = null;     // ms (null = kedi yalnizca biz hareket edince oynar)
 let saatSon = 0, kediSon = 0, oyunSaati = null;
@@ -1751,7 +1853,10 @@ function inBounds(r,c){ return r >= 0 && r < grid.length && c >= 0 && c < grid[0
 function boxAt(r,c){ return boxes.findIndex(b => b.r === r && b.c === c); }
 function isTarget(r,c){ return targets.some(t => t.r === r && t.c === c); }
 function allBoxesOnTargets(){ return targets.every(t => boxAt(t.r, t.c) >= 0); }
-function cheeseLocked(){ return targets.length > 0 && !allBoxesOnTargets(); }
+function bossUyanik(){ return !!boss && boss.can > 0; }
+function cheeseLocked(){ return (targets.length > 0 && !allBoxesOnTargets()) || bossUyanik(); }
+// Uyuyan ya da sersem boss kimseyi yakalayamaz
+function kediZararsiz(){ return !!boss && (boss.can <= 0 || boss.sersem > 0); }
 
 function bfsPath(sr, sc, tr, tc, blockFn){
   const rows = grid.length, cols = grid[0].length;
@@ -1785,6 +1890,26 @@ function bfsPath(sr, sc, tr, tc, blockFn){
    tuzagin uzerinden ve kilitli kapidan geciriyordu. Artik tuzaktan
    kaciniyor ve tek anahtarli bolumlerde once anahtara ugruyor. */
 function guvenliYol(){
+  // Boss bolumu: peynir yumaklar bitmeden acilmiyor. En yakin yumaktan
+  // en yakina, sonra peynire (boss bolumlerinde kapi/portal yok).
+  if (bossUyanik()){
+    const engel = (r, c) => grid[r][c] === WALL || grid[r][c] === TRAP;
+    const kalan = [];
+    grid.forEach((row, r) => row.forEach((v, c) => { if (v === YARN) kalan.push({r, c}); }));
+    let yer = { r: mouse.r, c: mouse.c };
+    const yol = [];
+    while (kalan.length){
+      let en = -1, enYol = null;
+      kalan.forEach((y, i) => {
+        const p = bfsPath(yer.r, yer.c, y.r, y.c, engel);
+        if (p.length && (!enYol || p.length < enYol.length)){ en = i; enYol = p; }
+      });
+      if (en < 0) break;
+      yol.push(...enYol); yer = kalan[en]; kalan.splice(en, 1);
+    }
+    return yol.concat(bfsPath(yer.r, yer.c, cheese.r, cheese.c, engel));
+  }
+
   // Durum = (konum, cepteki anahtar, hangi anahtarlar alindi, hangi kapilar acildi)
   // Her anahtar BIR kapi actigi icin duz BFS yetmiyor; durumu tasiyoruz.
   const rows = grid.length, cols = grid[0].length;
@@ -1867,6 +1992,7 @@ function loadLevel(idx, announce = true){
   const lvl = levels[idx];
   grid = lvl.grid.map(row => row.slice());
   cat = null; boxes = []; targets = []; portals = []; stars = [];
+  boss = lvl.boss ? { can: lvl.boss.can, max: lvl.boss.can, sersem: 0, sersemAdim: lvl.boss.sersem } : null;
   anahtar = 0; collectedStars = 0; moves = 0;
   won = false; gameFailed = false;
   if (hintTimer){ clearTimeout(hintTimer); hintTimer = null; }
@@ -1885,7 +2011,10 @@ function loadLevel(idx, announce = true){
   }
 
   const path = guvenliYol();
-  optimalMoves = path.length;
+  // Pati izi kutulari itmeyi ve kediden dolanmayi bilmiyor; bu bolumlerde
+  // gercek en az adim (enAz) cozucuden geliyor. Yoksa Zor'daki adim siniri
+  // yetmiyor (Dev Depo hic bitmiyordu) ve 3 yildiz imkansiz oluyordu.
+  optimalMoves = Math.max(path.length, lvl.enAz || 0);
   hintCells = diffConfig[difficulty].showHint ? path : [];
 
   const mult = diffConfig[difficulty].moveLimit;
@@ -1898,6 +2027,7 @@ function loadLevel(idx, announce = true){
   document.getElementById('sureBox').style.display = (kalanSure !== null) ? 'flex' : 'none';
   const anahtarVar = lvl.grid.some(row => row.indexOf(KEY) >= 0);
   document.getElementById('anahtarBox').style.display = anahtarVar ? 'flex' : 'none';
+  document.getElementById('bossBox').style.display = boss ? 'flex' : 'none';
   saatBaslat();
 
   document.getElementById('levelNum').textContent = idx + 1;
@@ -1909,7 +2039,27 @@ function loadLevel(idx, announce = true){
 
   if (announce){
     bubbleText(lvl.name + ' — ' + lvl.tip);
+    ogreticiGoster(idx);
   }
+}
+
+/* Ogretici kart: bolumde yeni bir oge ilk kez cikiyorsa (ogretici:{...}),
+   oyun baslamadan once anlatiyoruz. Kart acikken saat ve kedi duraklar
+   (oyunDuraklatildi overlay'e bakiyor). Bitirilmis bolumde ve ayni oturumda
+   ikinci kez (kedi yakalayip bolum yeniden basladiginda) gosterilmiyor. */
+let bilgiKarti = false;
+const ogreticiGosterildi = new Set();
+function ogreticiGoster(idx){
+  const o = levels[idx].ogretici;
+  if (!o || completed.has(idx) || ogreticiGosterildi.has(idx)) return false;
+  ogreticiGosterildi.add(idx);
+  const sn = ms => (ms / 1000).toLocaleString('tr-TR', { maximumFractionDigits:1 });
+  const metin = o.metin
+    .replace('{sure}', kalanSure !== null ? kalanSure : '')
+    .replace('{kedi}', kediAralik !== null ? sn(kediAralik) : '');
+  showModal(o.baslik, metin, false, false, o.emoji);
+  bilgiKarti = true;
+  return true;
 }
 
 function updateHUD(){
@@ -1920,6 +2070,11 @@ function updateHUD(){
   document.getElementById('hearts').textContent = (hearts === Infinity ? '∞' : hearts);
   const ab = document.getElementById('anahtarSayi');
   if (ab) ab.textContent = anahtar;
+  if (boss){
+    document.getElementById('bossCan').textContent = boss.can > 0
+      ? '❤️'.repeat(boss.can) + '🤍'.repeat(boss.max - boss.can) + (boss.sersem > 0 ? ' 💫' : '')
+      : '😴';
+  }
 
   const sy = document.getElementById('sayac');
   if (kalanSure !== null){
@@ -1940,9 +2095,9 @@ function buildLevelButtons(){
   wrap.innerHTML = '';
   levels.forEach((lvl, i) => {
     const b = document.createElement('button');
-    b.className = 'lvl-btn' + (levels[i].bonus ? ' bonus' : '') +
+    b.className = 'lvl-btn' + (levels[i].bonus ? ' bonus' : '') + (levels[i].boss ? ' boss' : '') +
                   (completed.has(i) ? ' done' : '') + (i === currentLevel ? ' active' : '');
-    b.textContent = levels[i].bonus ? '🎁' : (i + 1);
+    b.textContent = levels[i].bonus ? '🎁' : levels[i].boss ? '👑' : (i + 1);
     b.title = lvl.name;
     b.onclick = () => { currentLevel = i; loadLevel(i); };
     wrap.appendChild(b);
@@ -1951,11 +2106,14 @@ function buildLevelButtons(){
 
 function renderStickers(){
   const wrap = document.getElementById('stickers');
-  if (!earnedStickers.length){
+  // Cikartmalar bolum numarasina gore duruyor; bitirilmemis bolumlerin yeri bos.
+  // Kayitta JSON bu bosluklari null yapiyor - ekranda "null" yazmasin.
+  const olanlar = earnedStickers.filter(Boolean);
+  if (!olanlar.length){
     wrap.innerHTML = '<span class="empty-note">Her seviyeyi bitirdiğinde bir çıkartma kazanırsın!</span>';
     return;
   }
-  wrap.innerHTML = earnedStickers.map(s => '<span class="got">' + s + '</span>').join('');
+  wrap.innerHTML = olanlar.map(s => '<span class="got">' + s + '</span>').join('');
 }
 
 /* ==========================================================
@@ -2033,6 +2191,15 @@ function render(){
 
         let glyph = '';
         if (isMouse)            { div.classList.add('mouse'); glyph = hero; }
+        else if (isCat && boss) {
+          div.classList.add('cat', 'boss');
+          if (boss.can <= 0)       { div.classList.add('uyku');   glyph = '😴'; }
+          else if (boss.sersem > 0){ div.classList.add('sersem'); glyph = '😵'; }
+          else glyph = '😾';
+          const tac = document.createElement('span');
+          tac.className = 'taç'; tac.textContent = '👑';
+          div.appendChild(tac);
+        }
         else if (isCat)         { div.classList.add('cat'); glyph = '🐱'; }
         else if (isCheese)      {
           div.classList.add('cheese'); glyph = '🧀';
@@ -2047,6 +2214,7 @@ function render(){
         else if (bi >= 0)       { div.classList.add('box'); if (isTarget(r,c)) div.classList.add('on-target'); glyph = '📦'; }
         else if (star)          { div.classList.add('star'); glyph = '⭐'; }
         else if (cell === KEY)  { div.classList.add('key'); glyph = '🔑'; }
+        else if (cell === YARN) { div.classList.add('yumak'); glyph = '🧶'; }
         else if (cell === DOOR) { glyph = anahtar > 0 ? '🔓' : '🚪'; }
         else if (cell === PORTAL){ glyph = '🌀'; }
         else if (cell === TRAP) { glyph = '🕳️'; }
@@ -2068,7 +2236,7 @@ function render(){
   }
 
   // Kedi yakınsa tahta kırmızı kırmızı yanıp sönsün
-  const near = cat && (Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c)) <= 2;
+  const near = cat && !kediZararsiz() && (Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c)) <= 2;
   board.classList.toggle('danger', !!near && !won && !gameFailed);
 
   // Yon tuslarinin ortasindaki kahraman
@@ -2130,7 +2298,9 @@ function tryMove(dr, dc){
   // Yap-boz bölümü: kutular yerleşmeden peynir kilitli
   if (nr === cheese.r && nc === cheese.c && cheeseLocked()){
     sfxWall(); shakeMouse();
-    bubbleText('Peynir kilitli! Önce bütün kutuları yeşil alanlara it! 📦');
+    bubbleText(bossUyanik()
+      ? 'Peynir kilitli! Önce Kocaman Kedi\'yi yün yumaklarıyla uyut! 🧶'
+      : 'Peynir kilitli! Önce bütün kutuları yeşil alanlara it! 📦');
     return;
   }
 
@@ -2202,6 +2372,24 @@ function performEntry(nr, nc, dr, dc){
     say('key', 1.0);
   }
 
+  // Yun yumagi: boss onunla oynamaya dalar -> bir can gider, basi doner
+  if (cell === YARN){
+    grid[nr][nc] = EMPTY;
+    pendingFloats.push({r:nr, c:nc, t:'🧶'});
+    if (bossUyanik()){
+      boss.can--;
+      if (boss.can > 0){
+        boss.sersem = boss.sersemAdim;
+        sfxKey();
+        bubbleText('Kocaman Kedi yumakla oynuyor, başı döndü! 💫 ' + boss.can + ' yumak daha!');
+      } else {
+        boss.sersem = 0;
+        sfxLevelUp();
+        bubbleText('Kocaman Kedi uyudu! 😴 Peynirin kilidi açıldı, koş! 🧀');
+      }
+    }
+  }
+
   // Tuzak
   if (cell === TRAP){
     sfxTrap();
@@ -2267,7 +2455,8 @@ function finalizeMove(){
 
     const sureBonus = (kalanSure !== null) ? kalanSure * 2 : 0;
     const bonusBolum = !!levels[currentLevel].bonus;
-    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0) + sureBonus;
+    const bossBolum = !!levels[currentLevel].boss;
+    const bonus = collectedStars * 5 + (perfectMoves ? 20 : 0) + (difficulty === 'hard' ? 15 : 0) + sureBonus + (bossBolum ? 40 : 0);
     score += (50 + bonus) * (bonusBolum ? 2 : 1);
     completed.add(currentLevel);
 
@@ -2289,8 +2478,10 @@ function finalizeMove(){
       } else {
         const msgs = levels[currentLevel].bonus
           ? ['Bonus tamam!', 'Ekstra puan senin!', 'Bonus bitti!']
+          : bossBolum
+          ? ['Kocaman Kedi\'yi yendin!', 'Boss yenildi!', 'Kedi mışıl mışıl uyuyor!']
           : ['Süpersin!', 'Harikasın!', 'Çok iyiydi!', 'Bravo!', 'Muhteşem!'];
-        showModal(msgs[Math.floor(Math.random()*msgs.length)] + (levels[currentLevel].bonus ? ' 🎁' : ' 🎉'),
+        showModal(msgs[Math.floor(Math.random()*msgs.length)] + (levels[currentLevel].bonus ? ' 🎁' : bossBolum ? ' 👑' : ' 🎉'),
           'Seviye ' + (currentLevel + 1) + ' tamam! ' + moves + ' adımda bitirdin' + starInfo +
           '. Kazandığın çıkartma: ' + earnedStickers[currentLevel],
           false, false, earnedStickers[currentLevel] || '🎉', rating);
@@ -2356,7 +2547,7 @@ function saatTik(){
 
 /* ---------- KEDI ---------- */
 function kediYakaladiMi(baslik, metin){
-  if (!cat) return false;
+  if (!cat || kediZararsiz()) return false;
   if (cat.r !== mouse.r || cat.c !== mouse.c) return false;
   sfxCat(); say('cat');
   loseHeart(baslik, metin, '🐱');
@@ -2364,6 +2555,11 @@ function kediYakaladiMi(baslik, metin){
 }
 
 function kediAdimAt(){
+  // Boss uyuyorsa yurumez; sersemse bu sirasini kaybeder
+  if (boss){
+    if (boss.can <= 0) return false;
+    if (boss.sersem > 0){ boss.sersem--; updateHUD(); return false; }
+  }
   const path = bfsPath(cat.r, cat.c, mouse.r, mouse.c,
     (r,c) => grid[r][c] === WALL || grid[r][c] === DOOR || boxAt(r,c) >= 0);
   if (!path.length) return false;
@@ -2373,6 +2569,7 @@ function kediAdimAt(){
 }
 
 function kediSonrasi(){
+  if (boss && kediYakaladiMi('👑 Kocaman Kedi seni yakaladı!', 'Yün yumaklarını topla: her yumak onun başını döndürür!')) return;
   if (kediYakaladiMi('🐱 Kedi seni yakaladı!', 'Bir dahakine daha hızlı koşalım!')) return;
   const dist = Math.abs(cat.r - mouse.r) + Math.abs(cat.c - mouse.c);
   if (dist <= 2) say('near', 0.45);
@@ -2398,7 +2595,7 @@ function kediZamanlaYurusun(){
     sfxKediAdim();
     kediSonrasi();
     render();          // oyuncu hamle etmedi, tahtayi kendimiz tazeliyoruz
-  }
+  } else if (boss) render();   // sersemlik azaldi: yuz ifadesi degissin
 }
 
 /* ==========================================================
@@ -2406,7 +2603,7 @@ function kediZamanlaYurusun(){
    ========================================================== */
 function showHintFlash(){
   if (won || gameFailed) return;
-  const path = bfsPath(mouse.r, mouse.c, cheese.r, cheese.c,
+  const path = bossUyanik() ? guvenliYol() : bfsPath(mouse.r, mouse.c, cheese.r, cheese.c,
     (r,c) => grid[r][c] === WALL || (grid[r][c] === DOOR && anahtar <= 0) || boxAt(r,c) >= 0);
   if (!path.length){
     bubbleText('Hmm, buradan peynire yol yok! 🔄 Baştan başlayalım mı?');
@@ -2580,8 +2777,18 @@ document.addEventListener('dblclick',    e => e.preventDefault());
 /* ==========================================================
    14) KAYIT (localStorage)
    ========================================================== */
-const KAYIT_SURUM = 2;
+const KAYIT_SURUM = 4;
 const BONUS_SONRASI = [10, 20, 30, 40, 50, 60];   // bu bolumlerden SONRA bonus eklendi
+/* Surum 3'te bolumler zorluga gore yeniden siralandi (ogreticiler 1-10'da,
+   saat ve kendi yuruyen kedi 26'dan sonra). SURUM2_YENI[eski indeks] = yeni indeks. */
+const SURUM2_YENI = [0,1,2,3,4,5,9,7,17,20,10,57,36,39,8,6,35,14,11,26,12,21,22,19,41,13,24,33,
+  46,30,37,23,32,27,34,58,16,15,31,56,18,38,64,43,25,42,29,48,28,44,49,50,60,53,54,63,45,51,40,55,
+  52,61,47,59,62,65];
+/* Surum 4'te her 10 bolumden sonra bir boss eklendi (11, 23, ..., 71), bonuslar
+   bir kaydi (12, 24, ..., 72). SURUM3_YENI[eski indeks] = yeni indeks. */
+const SURUM3_YENI = [0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,23,24,26,27,25,28,29,30,31,
+  32,33,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,59,60,61,62,63,64,65,66,67,
+  68,69,71];
 
 // Eski (bonussuz) bolum indeksini yeni diziye tasir
 function eskiIndeksiTasi(i){
@@ -2621,6 +2828,28 @@ function loadProgress(){
         d.stickers = yeni;
       }
       if (typeof d.level === 'number') d.level = eskiIndeksiTasi(d.level);
+    }
+    // Surum 2 -> 3: ayni bolumler yeni sirada; bitirilenler ve cikartmalar bolumle birlikte tasiniyor
+    if ((d.s || 1) < 3){
+      const tasi = i => SURUM2_YENI[i];
+      if (Array.isArray(d.completed)) d.completed = d.completed.map(tasi).filter(i => i !== undefined);
+      if (Array.isArray(d.stickers)){
+        const yeni = [];
+        d.stickers.forEach((c, i) => { if (c && tasi(i) !== undefined) yeni[tasi(i)] = c; });
+        d.stickers = yeni;
+      }
+      if (typeof d.level === 'number') d.level = tasi(d.level);
+    }
+    // Surum 3 -> 4: bosslar araya girdi
+    if ((d.s || 1) < 4){
+      const tasi = i => SURUM3_YENI[i];
+      if (Array.isArray(d.completed)) d.completed = d.completed.map(tasi).filter(i => i !== undefined);
+      if (Array.isArray(d.stickers)){
+        const yeni = [];
+        d.stickers.forEach((c, i) => { if (c && tasi(i) !== undefined) yeni[tasi(i)] = c; });
+        d.stickers = yeni;
+      }
+      if (typeof d.level === 'number') d.level = tasi(d.level);
     }
 
     if (Array.isArray(d.completed)) completed = new Set(d.completed);
@@ -2679,6 +2908,7 @@ function showModal(title, text, finished, failed, emoji, rating){
 function closeModal(){
   document.getElementById('overlay').classList.remove('show');
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if (bilgiKarti){ bilgiKarti = false; return; }   // ogretici kart: sadece kapan, oyun baslasin
   if (gameFailed){ gameFailed = false; loadLevel(currentLevel); }
   else if (gameFinished){ gameFinished = false; startGame(true); }
   else nextLevel();
@@ -2715,6 +2945,7 @@ hearts = maxHearts();
 renderStickers();
 loadLevel(currentLevel, false);
 setTimeout(() => {
+  if (ogreticiGoster(currentLevel)) return;   // yeni oge varsa once onu anlat
   if (currentLevel > 0) bubbleText('Tekrar hoş geldin! Bölüm ' + (currentLevel + 1) + '\'den devam ediyoruz! 🧀');
   else bubbleText('Merhaba! Ben açım. Bana peyniri bulmama yardım eder misin? 🧀');
 }, 700);
